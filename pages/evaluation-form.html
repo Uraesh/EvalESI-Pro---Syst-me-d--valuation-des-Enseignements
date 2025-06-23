@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Évaluation de l'Enseignement - EvalESI Pro</title>
+    
+    <!-- CSS Framework & Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --esi-primary: #2563eb;
+            --esi-secondary: #1e40af;
+            --esi-accent: #3b82f6;
+            --esi-success: #10b981;
+            --esi-warning: #f59e0b;
+            --esi-danger: #ef4444;
+            --dark-bg-primary: #0f172a;
+            --dark-bg-secondary: #1e293b;
+            --dark-surface: #334155;
+            --dark-surface-hover: #475569;
+            --dark-border: #475569;
+            --dark-text: #f8fafc;
+            --dark-text-muted: #cbd5e1;
+            --gradient-primary: linear-gradient(135deg, var(--esi-primary), var(--esi-secondary));
+            --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            --gradient-surface: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(30,64,175,0.05));
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --shadow-glow: 0 0 20px var(--esi-accent);
+            --transition-fast: all 0.15s ease;
+            --transition-medium: all 0.3s ease;
+            --transition-slow: all 0.5s ease;
+            --esi-accent-glow: rgba(59, 130, 246, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg-primary);
+            color: var(--dark-text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .evaluation-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .evaluation-header {
+            background: var(--gradient-surface);
+            border-bottom: 1px solid var(--dark-border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-info h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--dark-text);
+        }
+
+        .header-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            font-size: 0.875rem;
+            color: var(--dark-text-muted);
+        }
+
+        .header-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--gradient-card);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--esi-accent);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--dark-text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .evaluation-content {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .progress-section {
+            background: var(--gradient-card);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: var(--dark-surface);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-sm);
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .criteria-section {
+            background: var(--gradient-card);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition-medium);
+        }
+
+        .criteria-section:hover {
+            border-color: var(--esi-accent);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark-text);
+            margin: 0;
+        }
+
+        .section-subtitle {
+            font-size: 0.875rem;
+            color: var(--dark-text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .criteria-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-lg);
+            margin-bottom: 1rem;
+            transition: var(--transition-fast);
+            border: 1px solid transparent;
+        }
+
+        .criteria-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--esi-accent);
+        }
+
+        .criteria-text {
+            flex: 1;
+            color: var(--dark-text);
+            font-weight: 500;
+            font-size: 1rem;
+            padding-right: 1rem;
+        }
+
+        .rating-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .rating-btn {
+            width: 60px;
+            height: 40px;
+            border: 2px solid var(--dark-border);
+            background: var(--dark-surface);
+            color: var(--dark-text-muted);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rating-btn:hover {
+            border-color: var(--esi-accent);
+            color: var(--esi-accent);
+            transform: translateY(-2px);
+        }
+
+        .rating-btn.selected {
+            background: var(--esi-accent);
+            border-color: var(--esi-accent);
+            color: white;
+            box-shadow: var(--shadow-glow);
+            transform: scale(1.1);
+        }
+
+        .rating-btn[data-rating="20"].selected {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .rating-btn[data-rating="10"].selected {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+
+        .rating-btn[data-rating="5"].selected {
+            background: #eab308;
+            border-color: #eab308;
+        }
+
+        .rating-btn[data-rating="0"].selected {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .section-average {
+            text-align: right;
+            padding-top: 1rem;
+            border-top: 1px solid var(--dark-border);
+            margin-top: 1rem;
+        }
+
+        .section-average-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--esi-accent);
+        }
+
+        .submit-section {
+            background: var(--gradient-card);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+            position: sticky;
+            bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-submit {
+            width: 100%;
+            max-width: 400px;
+            padding: 1.25rem 2rem;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: var(--radius-lg);
+            color: white;
+            font-weight: 600;
+            font-size: 1.125rem;
+            cursor: pointer;
+            transition: var(--transition-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 auto;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .completion-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--esi-success);
+            border-radius: var(--radius-md);
+            color: var(--esi-success);
+            display: none;
+        }
+
+        .rating-legend {
+            background: var(--gradient-card);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark-text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .legend-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-number {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .legend-1 { background: #059669; color: white; }
+        .legend-2 { background: #22c55e; color: white; }
+        .legend-3 { background: #eab308; color: white; }
+        .legend-4 { background: #ef4444; color: white; }
+
+        .legend-text {
+            font-size: 0.75rem;
+            color: var(--dark-text-muted);
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .evaluation-content {
+                padding: 1rem;
+            }
+
+            .header-content {
+                padding: 0 1rem;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-stats {
+                order: -1;
+                margin-bottom: 1rem;
+            }
+
+            .criteria-item {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .criteria-text {
+                padding-right: 0;
+            }
+
+            .rating-buttons {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .rating-btn {
+                width: 45px;
+                height: 35px;
+                font-size: 0.875rem;
+            }
+
+            .legend-items {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+
+            .submit-section {
+                position: relative;
+                bottom: auto;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .criteria-section {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .criteria-section:nth-child(even) {
+            animation-delay: 0.1s;
+        }
+
+        .criteria-section:nth-child(odd) {
+            animation-delay: 0.2s;
+        }
+
+        /* Success Modal Styles */
+        .success-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .success-content {
+            background: var(--dark-bg-secondary);
+            border: 1px solid var(--esi-success);
+            border-radius: var(--radius-xl);
+            padding: 3rem;
+            text-align: center;
+            max-width: 500px;
+            margin: 2rem;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--esi-success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--esi-success);
+            margin-bottom: 1rem;
+        }
+
+        .success-message {
+            color: var(--dark-text-muted);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="evaluation-container">
+        <!-- Header -->
+        <header class="evaluation-header">
+            <div class="header-content">
+                <div class="header-info">
+                    <h1>
+                        <i class="fas fa-star me-2"></i>
+                        Évaluation de l'Enseignement
+                    </h1>
+                    <div class="header-details" id="evaluationDetails">
+                        <div class="header-detail">
+                            <i class="fas fa-user"></i>
+                            <span id="teacherName">Chargement...</span>
+                        </div>
+                        <div class="header-detail">
+                            <i class="fas fa-book"></i>
+                            <span id="subjectName">Chargement...</span>
+                        </div>
+                        <div class="header-detail">
+                            <i class="fas fa-layer-group"></i>
+                            <span id="levelClass">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="progressPercent">0%</div>
+                        <div class="stat-label">Progression</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentAverage">0.0</div>
+                        <div class="stat-label">Moyenne</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="evaluation-content">
+            <!-- Progress Section -->
+            <div class="progress-section">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="answeredCount">0</div>
+                        <div class="stat-label">Réponses</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalCriteria">44</div>
+                        <div class="stat-label">Critères</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="sectionsCount">7</div>
+                        <div class="stat-label">Sections</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="timeElapsed">0:00</div>
+                        <div class="stat-label">Temps écoulé</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rating Legend -->
+            <div class="rating-legend">
+                <div class="legend-title">
+                    <i class="fas fa-info-circle"></i>
+                    Échelle d'évaluation
+                </div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-number legend-1">20</div>
+                        <div class="legend-text">Toujours</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-number legend-2">10</div>
+                        <div class="legend-text">Souvent</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-number legend-3">5</div>
+                        <div class="legend-text">Rarement</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-number legend-4">0</div>
+                        <div class="legend-text">Jamais</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluation Form Container -->
+            <div id="evaluationForm">
+                <!-- Les sections seront générées dynamiquement -->
+            </div>
+
+            <!-- Submit Section -->
+            <div class="submit-section">
+                <button type="button" class="btn-submit" id="submitEvaluation" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                    Soumettre l'évaluation
+                </button>
+                <div class="completion-message" id="completionMessage">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Parfait ! Vous avez répondu à tous les critères. Vous pouvez maintenant soumettre votre évaluation.
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-lock me-1"></i>
+                        Vos réponses sont anonymes et confidentielles
+                    </small>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Success Modal -->
+    <div class="success-modal" id="successModal" role="dialog" aria-labelledby="successTitle" aria-describedby="successMessage">
+        <div class="success-content">
+            <div class="success-icon" aria-hidden="true">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2 class="success-title" id="successTitle">Évaluation soumise avec succès !</h2>
+            <p class="success-message" id="successMessage">
+                Merci pour votre participation. Vos commentaires sont précieux pour améliorer la qualité de l'enseignement.
+            </p>
+            <button class="btn-submit" onclick="window.close()" aria-label="Fermer la fenêtre">
+                <i class="fas fa-home me-2" aria-hidden="true"></i>
+                Fermer
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Données des critères d'évaluation
+        const evaluationCriteria = {
+            "Intérêt de l'enseignant pour son cours": {
+                icon: "fas fa-heart",
+                criteria: [
+                    "Cherche à donner l'envie d'apprendre",
+                    "Fait preuve d'humour",
+                    "Utilise différents supports pédagogiques",
+                    "Lit ses notes ou un document écrit",
+                    "Suggère des implications pratiques",
+                    "Donne son point de vue personnel",
+                    "Fait preuve de conviction dans son cours",
+                    "Montre de l'intérêt et de l'enthousiasme"
+                ]
+            },
+            "Clarté du cours": {
+                icon: "fas fa-lightbulb",
+                criteria: [
+                    "Utilise un débit de parole approprié",
+                    "Parle d'une voix non monotone",
+                    "S'exprime clairement",
+                    "Avance dans son cours à une vitesse mesurée"
+                ]
+            },
+            "Relations avec les apprenants": {
+                icon: "fas fa-users",
+                criteria: [
+                    "Montre de l'intérêt pour les apprenants",
+                    "Accepte les points de vue divergents",
+                    "Apporte de l'aide en cas d'incompréhension",
+                    "Montre du respect envers les apprenants",
+                    "Est d'un contact facile (est disponible)",
+                    "Maintien de la discipline dans la classe",
+                    "Tolère les retards aux cours",
+                    "Sanctionne les absences non justifiées au cours précédent"
+                ]
+            },
+            "Organisation du cours": {
+                icon: "fas fa-clipboard-list",
+                criteria: [
+                    "Présente les objectifs du cours à atteindre",
+                    "Dispense le cours de manière organisée",
+                    "Donne des documents de travail",
+                    "Fait des transitions logiques entre les compétences à acquérir",
+                    "Fait des synthèses utiles lors de son cours",
+                    "Fait preuve de rigueur dans ses horaires de cours (du début et de la fin)"
+                ]
+            },
+            "Incitation à la participation": {
+                icon: "fas fa-comments",
+                criteria: [
+                    "Encourage les questions et les commentaires",
+                    "Interroge individuellement les apprenants",
+                    "Pose des questions à la classe entière",
+                    "Incite les apprenants à interagir",
+                    "Pose des questions complexes",
+                    "Crée dans la classe une ambiance à la fois animée et ordonnée",
+                    "Maintien en éveil de l'attention des apprenants"
+                ]
+            },
+            "Explications": {
+                icon: "fas fa-chalkboard-teacher",
+                criteria: [
+                    "Utilise des explications",
+                    "Répète ce qui est difficile",
+                    "Souligne les points centraux",
+                    "Donne des détails",
+                    "Identifie les points clés",
+                    "Donne des travaux de maison pour la compréhension du cours",
+                    "Fait des corrections ponctuelles des devoirs et travaux rendus par les apprenants"
+                ]
+            },
+            "Attitude des apprenants (Auto-perception)": {
+                icon: "fas fa-user-graduate",
+                criteria: [
+                    "Sont attentifs et appliqués",
+                    "Participent activement aux cours",
+                    "Respectent l'enseignant(e)",
+                    "Sont motivés par le cours"
+                ]
+            }
+        };
+
+        // Variables globales
+        let currentResponses = {};
+        let totalQuestions = 44;
+        let startTime = Date.now();
+        let timeInterval;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEvaluationInfo();
+            generateEvaluationForm();
+            startTimer();
+            
+            // Ajouter l'écouteur pour le bouton de soumission
+            document.getElementById('submitEvaluation').addEventListener('click', submitEvaluation);
+        });
+
+        function loadEvaluationInfo() {
+            // Récupérer les paramètres de l'URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const teacher = urlParams.get('teacher') || 'Enseignant non spécifié';
+            const subject = urlParams.get('subject') || 'Matière non spécifiée';
+            const level = urlParams.get('level') || '';
+            const className = urlParams.get('class') || '';
+
+            // Mettre à jour l'en-tête avec des messages de feedback
+            const teacherElement = document.getElementById('teacherName');
+            const subjectElement = document.getElementById('subjectName');
+            const levelElement = document.getElementById('levelClass');
+
+            teacherElement.textContent = 'Chargement des informations...';
+            subjectElement.textContent = 'Chargement des informations...';
+            levelElement.textContent = 'Chargement des informations...';
+
+            // Simuler un délai de chargement (à remplacer par votre logique réelle)
+            setTimeout(() => {
+                teacherElement.textContent = teacher;
+                subjectElement.textContent = subject;
+                levelElement.textContent = `${level} ${className}`;
+            }, 500);
+
+            // Mettre à jour le titre de la page
+            document.title = `Évaluation - ${teacher} - ${subject}`;
+        }
+
+        function generateEvaluationForm() {
+            const formContainer = document.getElementById('evaluationForm');
+            formContainer.innerHTML = '';
+
+            Object.entries(evaluationCriteria).forEach(([sectionName, sectionData], sectionIndex) => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'criteria-section';
+                sectionDiv.id = `section-${sectionIndex}`;
+
+                // En-tête de la section
+                const sectionHeader = document.createElement('div');
+                sectionHeader.className = 'section-header';
+                sectionHeader.innerHTML = `
+                    <div class="section-icon">
+                        <i class="${sectionData.icon}"></i>
+                    </div>
+                    <div>
+                        <h2 class="section-title">${sectionName}</h2>
+                        <p class="section-subtitle">${sectionData.criteria.length} critères à évaluer</p>
+                    </div>
+                `;
+                sectionDiv.appendChild(sectionHeader);
+
+                // Critères de la section
+                sectionData.criteria.forEach((criterion, criterionIndex) => {
+                    const criteriaItem = document.createElement('div');
+                    criteriaItem.className = 'criteria-item';
+                    criteriaItem.innerHTML = `
+                        <div class="criteria-text">${criterion}</div>
+                        <div class="rating-buttons">
+                            <button class="rating-btn" data-rating="20" 
+                                    data-section="${sectionIndex}" 
+                                    data-criterion="${criterionIndex}"
+                                    title="Toujours">
+                                20
+                            </button>
+                            <button class="rating-btn" data-rating="10" 
+                                    data-section="${sectionIndex}" 
+                                    data-criterion="${criterionIndex}"
+                                    title="Souvent">
+                                10
+                            </button>
+                            <button class="rating-btn" data-rating="5" 
+                                    data-section="${sectionIndex}" 
+                                    data-criterion="${criterionIndex}"
+                                    title="Rarement">
+                                5
+                            </button>
+                            <button class="rating-btn" data-rating="0" 
+                                    data-section="${sectionIndex}" 
+                                    data-criterion="${criterionIndex}"
+                                    title="Jamais">
+                                0
+                            </button>
+                        </div>
+                    `;
+                    sectionDiv.appendChild(criteriaItem);
+                });
+
+                // Moyenne de la section
+                const sectionAverage = document.createElement('div');
+                sectionAverage.className = 'section-average';
+                sectionAverage.innerHTML = `
+                    <span class="text-muted">Moyenne de cette section : </span>
+                    <span class="section-average-value" id="section-${sectionIndex}-average">0.0</span>
+                `;
+                sectionDiv.appendChild(sectionAverage);
+
+                formContainer.appendChild(sectionDiv);
+            });
+
+            // Ajouter les écouteurs d'événements
+            document.querySelectorAll('.rating-btn').forEach(btn => {
+                btn.addEventListener('click', handleRatingClick);
+            });
+        }
+
+        function getRatingLabel(rating) {
+            const labels = {
+                20: "Toujours",
+                10: "Souvent",
+                5: "Rarement",
+                0: "Jamais"
+            };
+            return labels[rating] || "";
+        }
+
+        function handleRatingClick(event) {
+            const button = event.target;
+            const rating = parseInt(button.dataset.rating);
+            const section = button.dataset.section;
+            const criterion = button.dataset.criterion;
+
+            // Mettre à jour l'apparence des boutons
+            const buttons = button.parentElement.querySelectorAll('.rating-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+
+            // Annoncer le changement pour les lecteurs d'écran
+            const ratingLabel = getRatingLabel(rating);
+            const criterionText = button.closest('.criteria-item').querySelector('.criteria-text').textContent;
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('class', 'sr-only');
+            announcement.textContent = `${criterionText} : ${ratingLabel}`;
+            document.body.appendChild(announcement);
+            setTimeout(() => announcement.remove(), 1000);
+
+            // Stocker la réponse
+            if (!currentResponses[section]) {
+                currentResponses[section] = {};
+            }
+            currentResponses[section][criterion] = rating;
+
+            // Mettre à jour les statistiques
+            updateStats();
+        }
+
+        function updateStats() {
+            const totalAnswered = Object.values(currentResponses).reduce((sum, section) => 
+                sum + Object.keys(section).length, 0);
+            
+            const progress = (totalAnswered / totalQuestions) * 100;
+            document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('answeredCount').textContent = totalAnswered;
+
+            // Calculer la moyenne globale
+            let totalScore = 0;
+            let totalResponses = 0;
+
+            Object.entries(currentResponses).forEach(([section, responses]) => {
+                const sectionScores = Object.values(responses);
+                const sectionTotal = sectionScores.reduce((sum, score) => sum + score, 0);
+                const sectionAverage = sectionScores.length > 0 ? sectionTotal / sectionScores.length : 0;
+                
+                // Mettre à jour la moyenne de la section
+                document.getElementById(`section-${section}-average`).textContent = 
+                    sectionAverage.toFixed(1);
+
+                totalScore += sectionTotal;
+                totalResponses += sectionScores.length;
+            });
+
+            const globalAverage = totalResponses > 0 ? totalScore / totalResponses : 0;
+            document.getElementById('currentAverage').textContent = globalAverage.toFixed(1);
+
+            // Activer/désactiver le bouton de soumission
+            const submitButton = document.getElementById('submitEvaluation');
+            const completionMessage = document.getElementById('completionMessage');
+            
+            if (totalAnswered === totalQuestions) {
+                submitButton.disabled = false;
+                completionMessage.style.display = 'block';
+            } else {
+                submitButton.disabled = true;
+                completionMessage.style.display = 'none';
+            }
+        }
+
+        function submitEvaluation() {
+            const submitButton = document.getElementById('submitEvaluation');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Soumission en cours...';
+
+            // Simuler un délai de soumission (à remplacer par votre logique réelle)
+            setTimeout(() => {
+                // Calculer la moyenne finale
+                let totalScore = 0;
+                let totalResponses = 0;
+
+                Object.values(currentResponses).forEach(section => {
+                    Object.values(section).forEach(score => {
+                        totalScore += score;
+                        totalResponses++;
+                    });
+                });
+
+                const finalAverage = totalResponses > 0 ? totalScore / totalResponses : 0;
+
+                // Afficher le modal de succès avec la moyenne
+                const successModal = document.getElementById('successModal');
+                const successMessage = successModal.querySelector('.success-message');
+                successMessage.innerHTML = `
+                    Merci pour votre participation. Vos commentaires sont précieux pour améliorer la qualité de l'enseignement.<br>
+                    <strong>Note finale : ${finalAverage.toFixed(1)}/20</strong>
+                `;
+                successModal.style.display = 'flex';
+
+                // Envoyer les données à Supabase
+                const evaluationData = {
+                    teacher: document.getElementById('teacherName').textContent,
+                    subject: document.getElementById('subjectName').textContent,
+                    level: document.getElementById('levelClass').textContent,
+                    responses: currentResponses,
+                    average: finalAverage,
+                    timestamp: new Date().toISOString()
+                };
+
+                // TODO: Implémenter l'envoi à Supabase
+                console.log('Données d\'évaluation:', evaluationData);
+            }, 1000);
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timeInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timeElapsed').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>

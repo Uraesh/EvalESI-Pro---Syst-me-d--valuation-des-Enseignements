@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="dark" dir="ltr">
+<head>
+    <!-- =============================================================================
+         MÉTA-DONNÉES - Configuration optimisée pour le tableau de bord administrateur
+         ============================================================================= -->
+    <meta charset="UTF-8">
+    <meta 
+        name="viewport" 
+        content="width=device-width, initial-scale=1.0">
+    <meta 
+        name="description" 
+        content="EvalESI Pro - Dashboard Administrateur - Gestion des évaluations d'enseignements">
+    <meta 
+        name="author" 
+        content="ESI - École Supérieure d'Informatique">
+    <meta
+        name="keywords" 
+        content="EvalESI, dashboard, administration, statistiques, analytics, IA">
+    <meta
+        name="theme-color" 
+        content="#0066cc">
+    <meta
+        name="robots" 
+        content="noindex, nofollow">
+    <meta name="language" content="fr">
+    
+    <!-- Security Headers renforcés pour l'admin -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    
+    <title>EvalESI Pro - Dashboard Administrateur</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/apple-touch-icon.png">  
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon.svg"> 
+    
+    <!-- =============================================================================
+         CDN IMPORTS - Versions fixes et optimisées pour les performances
+         ============================================================================= -->
+    
+    <!-- Bootstrap 5.3.2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
+          crossorigin="anonymous">
+    
+    <!-- Font Awesome 6.5.1 pour les icônes -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+          rel="stylesheet" 
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+          crossorigin="anonymous">
+    
+    <!-- Google Fonts - Typography professionnelle -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" 
+          rel="stylesheet">
+    
+    <!-- Animate.css pour les micro-animations -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" 
+          rel="stylesheet" 
+          integrity="sha512-c42qTSw/wPZ3/5LBzD+Bw5f7bSF2oxou6wEb+I/lqeaKV5FDIfMvvRp772y4jcJLKuGUOpbJMdg/BTl50fJYAw==" 
+          crossorigin="anonymous">
+    
+    <!-- SweetAlert2 pour les notifications avancées -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css" 
+          rel="stylesheet">
+    
+    <!-- Plotly.js CDN pour les graphiques -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Custom CSS pour le tableau de bord -->
+    <link rel="stylesheet" href="../assets/css/style.css">   
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/forms.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+       
+    <style>
+        /* =============================================================================
+           INTÉGRATION CHARTS AVEC FORMS.CSS - Styles additionnels pour les graphiques
+           ============================================================================= */
+        
+        /* Container de graphique avec styles forms */
+        .chart-container {
+            background: var(--gradient-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            transition: var(--transition-medium);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: var(--transition-medium);
+        }
+
+        .chart-container:hover::before {
+            opacity: 1;
+        }
+
+        /* Header de graphique avec styles forms */
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark-text);
+            margin: 0;
+        }
+
+        /* Contrôles de période avec styles forms */
+        .chart-controls {
+            display: flex;
+            gap: var(--spacing-xs);
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xs);
+        }
+
+        .chart-control-btn {
+            background: transparent;
+            border: none;
+            color: var(--dark-text);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            min-width: 40px;
+        }
+
+        .chart-control-btn:hover {
+            background: var(--dark-surface-hover);
+            color: var(--esi-accent);
+        }
+
+        .chart-control-btn.active {
+            background: var(--esi-accent);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 204, 255, 0.3);
+        }
+
+        /* Zone de graphique */
+        .chart-area {
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-top: var(--spacing-md);
+            min-height: 400px;
+            position: relative;
+        }
+
+        /* Loading state pour les graphiques */
+        .chart-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            color: var(--dark-text-muted);
+        }
+
+        .chart-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--dark-border);
+            border-top: 3px solid var(--esi-accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: var(--spacing-md);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Filtre de graphique avec styles forms */
+        .chart-filters {
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .chart-filters-row {
+            display: flex;
+            gap: var(--spacing-lg);
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .chart-filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* Override pour Plotly */
+        .js-plotly-plot .plotly {
+            background: transparent !important;
+        }
+
+        .js-plotly-plot .plotly .main-svg {
+            background: transparent !important;
+        }
+
+        /* Responsive design pour les graphiques */
+        @media (max-width: 768px) {
+            .chart-header {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                align-items: stretch;
+            }
+
+            .chart-controls {
+                justify-content: center;
+            }
+
+            .chart-filters-row {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+
+            .chart-filter-group {
+                min-width: auto;
+            }
+        }
+    </style>
+       
+</head>
+
+<body class="gpu-accelerated">
+    <!-- =============================================================================
+         STRUCTURE PRINCIPALE - Layout du dashboard administrateur
+         ============================================================================= -->
+    <div class="dashboard-wrapper" x-data="dashboard">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" :class="{ 'collapsed': isSidebarCollapsed, 'show': showMobileSidebar }">
+            <div class="sidebar-header animate-fade-in">
+                <div class="sidebar-logo will-change-transform">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1 class="sidebar-title">EvalESI Pro</h1>
+                <p class="sidebar-subtitle">Dashboard Administrateur</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h2 class="nav-section-title">Navigation</h2>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="dashboard.html" class="nav-link active animate-slide-in-left">
+                                <i class="nav-icon fas fa-home"></i>
+                                <span class="nav-text">Tableau de bord</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="create-evaluation.html" class="nav-link animate-slide-in-left" style="animation-delay: 0.1s">
+                                <i class="nav-icon fas fa-plus-circle"></i>
+                                <span class="nav-text">Créer évaluation</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="analytics.html" class="nav-link animate-slide-in-left" style="animation-delay: 0.2s">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <span class="nav-text">Statistiques</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="teachers.html" class="nav-link animate-slide-in-left" style="animation-delay: 0.3s">
+                                <i class="nav-icon fas fa-users"></i>
+                                <span class="nav-text">Enseignants</span>                                 
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="sessions.html" class="nav-link animate-slide-in-left" style="animation-delay: 0.4s">
+                                <i class="nav-icon fas fa-calendar-alt"></i>
+                                <span class="nav-text">Sessions</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="analytics.html" class="nav-link animate-slide-in-left" style="animation-delay: 0.5s">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <span class="nav-text">Rapports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <h2 class="nav-section-title">Administration</h2>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link animate-slide-in-left" style="animation-delay: 0.6s">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <span class="nav-text">Paramètres</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link animate-slide-in-left" style="animation-delay: 0.7s">
+                                <i class="nav-icon fas fa-user-shield"></i>
+                                <span class="nav-text">Sécurité</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content" :class="{ 'expanded': isSidebarCollapsed }">
+            <!-- Top Navigation Bar -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="sidebar-toggle smooth-transition" @click="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="page-title">Tableau de bord</h2>
+                </div>
+                
+                <div class="navbar-right">
+                    <div class="navbar-stats animate-fade-in">
+                        <div class="stat-item">
+                            <span class="stat-value" x-text="stats.totalEvaluations">0</span>
+                            <span class="stat-label">Évaluations</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" x-text="stats.responseRate + '%'">0%</span>
+                            <span class="stat-label">Taux de réponse</span>
+                        </div>
+                    </div>
+                    
+                    <div class="user-menu">
+                        <div class="user-avatar hover-scale">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Content Container -->
+            <div class="content-container">
+                <!-- Dashboard Header avec actions -->
+                <div class="dashboard-header animate-slide-up" style="margin-bottom: var(--spacing-xl);">
+                    <div style="margin-bottom: var(--spacing-lg);">
+                        <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--dark-text); margin-bottom: var(--spacing-sm);">
+                            Bienvenue sur EvalESI Pro
+                        </h1>
+                        <p style="font-size: 1.125rem; color: var(--dark-text-muted);">
+                            Gérez et analysez les évaluations d'enseignements en temps réel
+                        </p>
+                    </div>
+                    
+                    <!-- Actions rapides -->
+                    <div class="action-buttons">
+                        <a href="create-evaluation.html" class="btn-primary hover-lift">
+                            <i class="fas fa-plus"></i>
+                            Nouvelle évaluation
+                        </a>
+                        <a href="analytics.html" class="btn-secondary hover-scale">
+                            <i class="fas fa-chart-bar"></i>
+                            Voir les stats
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div x-show="isLoading" class="content-loading animate-fade-in">
+                    <div class="loading-spinner-lg"></div>
+                    <p style="margin-top: var(--spacing-md);">Chargement des données...</p>
+                </div>
+
+                <!-- Statistics Grid -->
+                <div class="dashboard-grid" x-show="!isLoading">
+                    <div class="dashboard-card stats-card hover-lift animate-slide-up" style="animation-delay: 0.1s">
+                        <div class="card-header">
+                            <h3 class="card-title">Évaluations Totales</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="stats-number" x-text="stats.totalEvaluations">0</div>
+                            <div class="stats-label">Évaluations créées</div>
+                            <div class="stats-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>                             
+                                <span>+12% ce mois</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card stats-card hover-lift animate-slide-up" style="animation-delay: 0.2s">
+                        <div class="card-header">
+                            <h3 class="card-title">Taux de Réponse</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="stats-number" x-text="stats.responseRate + '%'">0%</div>
+                            <div class="stats-label">Participation moyenne</div>
+                            <div class="stats-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>                             
+                                <span>+5% cette semaine</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card stats-card hover-lift animate-slide-up" style="animation-delay: 0.3s">
+                        <div class="card-header">
+                            <h3 class="card-title">Satisfaction Moyenne</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-smile"></i>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="stats-number" x-text="stats.satisfaction + '/5'">0/5</div>
+                            <div class="stats-label">Note globale</div>
+                            <div class="stats-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>                             
+                                <span>+0.2 points</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nouvelle carte pour les actions rapides -->
+                    <div class="dashboard-card hover-lift animate-slide-up" style="animation-delay: 0.4s">
+                        <div class="card-header">
+                            <h3 class="card-title">Actions Rapides</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="quick-actions">
+                                <a href="create-evaluation.html" class="quick-action hover-glow">
+                                    <div class="quick-action-icon">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </div>
+                                    <div class="quick-action-title">Créer</div>
+                                    <div class="quick-action-desc">Nouvelle évaluation</div>
+                                </a>
+                                <a href="analytics.html" class="quick-action hover-glow">
+                                    <div class="quick-action-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="quick-action-title">Analyser</div>
+                                    <div class="quick-action-desc">Voir les tendances</div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section - INTÉGRÉE AVEC FORMS.CSS -->
+                <div class="chart-container hover-lift animate-slide-up" style="animation-delay: 0.5s;" x-show="!isLoading">
+                    <!-- Filtres de graphique avec styles forms -->
+                    <div class="chart-filters">
+                        <label class="form-label">Filtres d'analyse</label>
+                        <div class="chart-filters-row">
+                            <div class="chart-filter-group">
+                                <label class="form-label">Période d'analyse</label>
+                                <select class="form-select" x-model="selectedPeriod" @change="updateChartPeriod()">
+                                    <option value="7d">7 derniers jours</option>
+                                    <option value="30d">30 derniers jours</option>
+                                    <option value="90d">3 derniers mois</option>
+                                    <option value="6m">6 derniers mois</option>
+                                    <option value="1y">Dernière année</option>
+                                </select>
+                            </div>
+                            
+                            <div class="chart-filter-group">
+                                <label class="form-label">Type de données</label>
+                                <select class="form-select" x-model="chartDataType" @change="updateChartData()">
+                                    <option value="evaluations">Nombre d'évaluations</option>
+                                    <option value="satisfaction">Satisfaction moyenne</option>
+                                    <option value="participation">Taux de participation</option>
+                                    <option value="completion">Taux de completion</option>
+                                </select>
+                            </div>
+
+                            <div class="chart-filter-group">
+                                <label class="form-label">Granularité</label>
+                                <div class="chart-controls">
+                                    <button class="chart-control-btn" 
+                                            :class="{ 'active': chartGranularity === 'daily' }"
+                                            @click="setChartGranularity('daily')">
+                                        Jour
+                                    </button>
+                                    <button class="chart-control-btn"
+                                            :class="{ 'active': chartGranularity === 'weekly' }"
+                                            @click="setChartGranularity('weekly')">
+                                        Semaine
+                                    </button>
+                                    <button class="chart-control-btn"
+                                            :class="{ 'active': chartGranularity === 'monthly' }"
+                                            @click="setChartGranularity('monthly')">
+                                        Mois
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-actions" style="margin: 0; padding: 0; border: none;">
+                                <button class="btn-submit" @click="refreshChart()" :disabled="isChartLoading">
+                                    <i class="fas fa-sync-alt" :class="{ 'fa-spin': isChartLoading }"></i>
+                                    Actualiser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Header de graphique -->
+                    <div class="chart-header">
+                        <h3 class="chart-title" x-text="getChartTitle()">Évolution des évaluations</h3>
+                        <div class="chart-controls">
+                            <button class="chart-control-btn" 
+                                    :class="{ 'active': chartViewMode === 'line' }"
+                                    @click="setChartViewMode('line')"
+                                    title="Vue en ligne">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button class="chart-control-btn"
+                                    :class="{ 'active': chartViewMode === 'bar' }"
+                                    @click="setChartViewMode('bar')"
+                                    title="Vue en barres">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                            <button class="chart-control-btn"
+                                    :class="{ 'active': chartViewMode === 'area' }"
+                                    @click="setChartViewMode('area')"
+                                    title="Vue en aire">
+                                <i class="fas fa-chart-area"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Zone de graphique -->
+                    <div class="chart-area">
+                        <!-- Loading state -->
+                        <div x-show="isChartLoading" class="chart-loading">
+                            <div class="chart-loading-spinner"></div>
+                            <p>Chargement des données graphiques...</p>
+                        </div>
+
+                        <!-- Graphique principal -->
+                        <div x-show="!isChartLoading" id="evaluationChart" style="height: 100%; width: 100%;"></div>
+                    </div>
+
+                    <!-- Informations additionnelles -->
+                    <div class="form-feedback info" style="margin-top: var(--spacing-md);">
+                        <i class="fas fa-info-circle"></i>
+                        Les données sont actualisées automatiquement toutes les 5 minutes. 
+                        Dernière mise à jour :  <span x-text="lastUpdate"></span>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Table -->
+                <div class="dashboard-card hover-lift animate-slide-up" style="animation-delay: 0.6s;" x-show="!isLoading">
+                    <div class="card-header">
+                        <h3 class="card-title">Activité Récente</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="table-responsive">
+                            <table class="table" style="margin: 0;">
+                        <thead>
+                                    <tr style="border-bottom: 1px solid var(--dark-border);">
+                                        <th style="color: var(--dark-text-muted); font-weight: 600; padding: var(--spacing-md) 0;">Date</th>
+                                        <th style="color: var(--dark-text-muted); font-weight: 600; padding: var(--spacing-md) 0;">Enseignant</th>
+                                        <th style="color: var(--dark-text-muted); font-weight: 600; padding: var(--spacing-md) 0;">Matière</th>
+                                        <th style="color: var(--dark-text-muted); font-weight: 600; padding: var(--spacing-md) 0;">Statut</th>
+                                        <th style="color: var(--dark-text-muted); font-weight: 600; padding: var(--spacing-md) 0;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody x-ref="recentActivityTable">
+                            <template x-for="activity in recentActivity" :key="activity.date">
+                                        <tr style="border-bottom: 1px solid var(--dark-border);">
+                                            <td style="color: var(--dark-text); padding: var(--spacing-md) 0;" x-text="activity.date"></td>
+                                            <td style="color: var(--dark-text); padding: var(--spacing-md) 0;" x-text="activity.enseignant"></td>
+                                            <td style="color: var(--dark-text); padding: var(--spacing-md) 0;" x-text="activity.matiere"></td>
+                                            <td style="padding: var(--spacing-md) 0;">
+                                        <span :class="'badge bg-' + (activity.statut === 'Complété' ? 'success' : 'warning')"
+                                                      x-text="activity.statut"
+                                                      style="padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600;"></span>
+                                    </td>
+                                            <td style="padding: var(--spacing-md) 0;">
+                                                <button class="btn-secondary hover-scale" style="padding: var(--spacing-xs) var(--spacing-sm);">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- =============================================================================
+         SCRIPTS - Chargement optimisé des dépendances JavaScript
+         ============================================================================= -->
+    
+    <!-- Bootstrap Bundle avec Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" 
+            crossorigin="anonymous"></script>
+    
+    <!-- SweetAlert2 pour les notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
+    
+    <!-- Alpine.js pour la réactivité -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Scripts personnalisés -->
+    <script src="/assets/js/mock-data.js"></script>
+    <script type="module" src="../assets/js/supabase-client.js"></script>
+    <script type="module" src="../assets/js/dashboard.js"></script>
+</body>
+</html>

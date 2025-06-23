@@ -1,0 +1,33 @@
+{
+  "name": "evalesi-pro",
+  "version": "1.0.0",
+  "description": "Système d'Évaluation des Enseignements",
+  "type": "module",
+  "main": "supabase-client.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.8",
+    "alpinejs": "^3.14.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "ml-random-forest": "^2.1.0",
+    "nanoid": "^5.1.5",
+    "openai": "^5.2.0",
+    "plotly.js": "^2.35.3",
+    "sharp": "^0.34.2",
+    "sweetalert": "^2.1.2"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "postcss": "^8.5.4",
+    "postcss-cli": "^11.0.1"
+  }
+}

@@ -1,0 +1,483 @@
+
+/* =============================================================================
+   ANIMATIONS.CSS - Animations et effets visuels ESI Dashboard
+   ============================================================================= */
+
+/* Variables CSS importées du système de design */
+@import url('style.css'); /* Pour les variables CSS */
+
+/* =============================================================================
+   KEYFRAMES - Définitions des animations
+   ============================================================================= */
+
+/* Animation d'arrière-plan subtile */
+@keyframes subtleFloat {
+    0% { 
+        opacity: 0.3; 
+        transform: translate(0, 0) rotate(0deg); 
+    }
+    100% { 
+        opacity: 0.6; 
+        transform: translate(-10px, -10px) rotate(1deg); 
+    }
+}
+
+/* Animation de brillance pour le logo */
+@keyframes logoShine {
+    0%, 100% { 
+        transform: translateX(-100%) translateY(-100%) rotate(45deg); 
+    }
+    50% { 
+        transform: translateX(100%) translateY(100%) rotate(45deg); 
+    }
+}
+
+/* Spinner de chargement */
+@keyframes spin {
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+/* Animation skeleton pour le chargement */
+@keyframes skeleton-loading {
+    0% { 
+        background-position: 200% 0; 
+    }
+    100% { 
+        background-position: -200% 0; 
+    }
+}
+
+/* Animations d'entrée - Fade In */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+    }
+    to { 
+        opacity: 1; 
+    }
+}
+
+/* Animations d'entrée - Slide Up */
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animations d'entrée - Slide In Left */
+@keyframes slideInLeft {
+    from { 
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animations d'entrée - Slide In Right */
+@keyframes slideInRight {
+    from { 
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animation de pulsation */
+@keyframes pulse {
+    0%, 100% { 
+        opacity: 1; 
+    }
+    50% { 
+        opacity: 0.7; 
+    }
+}
+
+/* Animation de rebond subtil */
+@keyframes bounce {
+    0%, 20%, 53%, 80%, 100% {
+        transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+        transform: translate3d(0, -8px, 0);
+    }
+    70% {
+        transform: translate3d(0, -4px, 0);
+    }
+    90% {
+        transform: translate3d(0, -2px, 0);
+    }
+}
+
+/* Animation de zoom */
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Animation de glissement vers le bas */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation de rotation douce */
+@keyframes rotate360 {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Animation de scintillement */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Animation de balancement */
+@keyframes sway {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(1deg);
+    }
+    75% {
+        transform: rotate(-1deg);
+    }
+}
+
+/* =============================================================================
+   ARRIÈRE-PLAN ANIMÉ - Effets de fond
+   ============================================================================= */
+
+/* Arrière-plan animé subtil pour le dashboard */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 15% 85%, rgba(0, 102, 204, 0.1) 0%, transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(0, 204, 255, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(0, 204, 102, 0.05) 0%, transparent 50%);
+    z-index: -1;
+    animation: subtleFloat 20s ease-in-out infinite alternate;
+}
+
+/* =============================================================================
+   ANIMATIONS DE COMPOSANTS - Effets spécifiques aux éléments
+   ============================================================================= */
+
+/* Animation du logo avec effet de brillance */
+.sidebar-logo::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(45deg);
+    animation: logoShine 3s ease-in-out infinite;
+}
+
+/* =============================================================================
+   LOADING STATES - États de chargement animés
+   ============================================================================= */
+
+/* Spinner de chargement */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--esi-accent);
+    animation: spin 1s ease-in-out infinite;
+}
+
+/* Spinner plus grand */
+.loading-spinner-lg {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--esi-accent);
+    animation: spin 1s ease-in-out infinite;
+}
+
+/* Animation skeleton pour le chargement */
+.loading-skeleton {
+    background: linear-gradient(90deg, var(--dark-surface) 25%, var(--dark-surface-hover) 50%, var(--dark-surface) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+
+/* =============================================================================
+   CLASSES D'ANIMATION - Classes utilitaires pour les animations
+   ============================================================================= */
+
+/* Animations d'entrée */
+.animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+}
+
+.animate-slide-in-left {
+    animation: slideInLeft 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+    animation: slideInRight 0.6s ease-out;
+}
+
+.animate-slide-down {
+    animation: slideDown 0.6s ease-out;
+}
+
+.animate-zoom-in {
+    animation: zoomIn 0.5s ease-out;
+}
+
+.animate-bounce {
+    animation: bounce 1s ease-out;
+}
+
+/* Animations continues */
+.pulse-animation {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.rotation-animation {
+    animation: rotate360 2s linear infinite;
+}
+
+.sway-animation {
+    animation: sway 3s ease-in-out infinite;
+}
+
+/* Animations de survol */
+.hover-lift {
+    transition: var(--transition-medium);
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+}
+
+.hover-scale {
+    transition: var(--transition-fast);
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.hover-glow {
+    transition: var(--transition-medium);
+}
+
+.hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+}
+
+/* =============================================================================
+   ANIMATIONS SPÉCIALISÉES - Effets avancés
+   ============================================================================= */
+
+/* Effet de scintillement pour les cartes premium */
+.shimmer-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+/* Effet de pulsation pour les notifications */
+.notification-pulse {
+    position: relative;
+}
+
+.notification-pulse::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--esi-accent);
+    opacity: 0.3;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Animation de typing pour les textes */
+.typing-animation {
+    overflow: hidden;
+    border-right: 2px solid var(--esi-accent);
+    white-space: nowrap;
+    animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+@keyframes blink-caret {
+    from, to { border-color: transparent; }
+    50% { border-color: var(--esi-accent); }
+}
+
+/* =============================================================================
+   ANIMATIONS DE TRANSITION - Transitions entre états
+   ============================================================================= */
+
+/* Transition douce pour tous les éléments interactifs */
+.smooth-transition {
+    transition: all var(--transition-medium);
+}
+
+/* Transition rapide */
+.fast-transition {
+    transition: all var(--transition-fast);
+}
+
+/* Transition lente */
+.slow-transition {
+    transition: all var(--transition-slow);
+}
+
+/* =============================================================================
+   ANIMATIONS RESPONSIVES - Adaptations pour différents écrans
+   ============================================================================= */
+
+/* Réduction des animations sur petits écrans pour les performances */
+@media (max-width: 768px) {
+    .animate-slide-up,
+    .animate-slide-in-left,
+    .animate-slide-in-right,
+    .animate-slide-down {
+        animation-duration: 0.4s;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Désactivation de certaines animations coûteuses sur mobile */
+    .shimmer-effect::before {
+        animation: none;
+    }
+    
+    body::before {
+        animation: none;
+    }
+}
+
+/* Respect des préférences utilisateur pour les animations */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    body::before {
+        animation: none;
+    }
+    
+    .shimmer-effect::before,
+    .notification-pulse::after {
+        animation: none;
+    }
+}
+
+/* =============================================================================
+   ANIMATIONS DE PERFORMANCE - Optimisations
+   ============================================================================= */
+
+/* Optimisation GPU pour les animations */
+.gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Animations avec will-change pour les performances */
+.will-change-transform {
+    will-change: transform;
+}
+
+.will-change-opacity {
+    will-change: opacity;
+}
+ 
+/* =============================================================================
+   ÉTATS D'ANIMATION - Contrôle des animations
+   ============================================================================= */
+
+/* Pause des animations */
+.animations-paused * {
+    animation-play-state: paused !important;
+}
+
+/* Accélération des animations pour les tests */
+.animations-fast * {
+    animation-duration: 0.1s !important;
+    transition-duration: 0.1s !important;
+}

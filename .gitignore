@@ -1,0 +1,54 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build output
+dist/
+build/
+assets/css/purged/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Supabase
+.supabase/
+
+# Configuration Supabase
+SUPABASE_URL=https://goyxxilqkouwtznfvuok.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdveXh4aWxxa291d3R6bmZ2dW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk5MjQ5NzAsImV4cCI6MjA1NTUwMDk3MH0.2QYwXZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQ
+
+# Configuration de l'application
+NODE_ENV=development
+PORT=3000
+
+# Configuration de sécurité
+JWT_SECRET=EPy-0PJJz_w98ql8BibHjmdF46EqKSuiVlEuJMZFblCtIuWjSrfGQaqmEVVbzAzT
+COOKIE_SECRET=1jRdjGun_HBhsPZo8Iu5t_wDVTf6z72N
+

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="dark" dir="ltr">
+<head>
+    <!-- =============================================================================
+         MÉTA-DONNÉES - Informations essentielles pour le SEO et la sécurité
+         ============================================================================= -->
+    <meta charset="UTF-8">
+    <meta 
+        name="viewport" 
+        content="width=device-width, initial-scale=1.0">
+    <meta 
+        name="description" 
+        content="EvalESI Pro - Système d'évaluation des enseignements">
+    <meta 
+        name="author" 
+        content="ESI - École Supérieure d'Informatique">
+    <meta
+        name="keywords" 
+        content="EvalESI, ESI, École Supérieure d'Informatique, évaluation, enseignements, administration">
+    <meta
+        name="theme-color" 
+        content="#0066cc">
+    <meta
+        name="robots" 
+        content="index, follow">
+    <meta
+        name="google-site-verification" 
+        content="votre-code-de-vérification-google">
+    <meta
+        name="msapplication-TileColor" 
+        content="#0066cc">
+    <meta
+        name="msapplication-TileImage" 
+        content="assets/images/favicon.ico">
+    <meta name="language" content="fr">
+        
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    
+    <title>EvalESI Pro - Connexion Administration</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/apple-touch-icon.png"> 
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon.svg"> 
+    <!-- =============================================================================
+         CDN IMPORTS - Versions fixes pour la stabilité
+         ============================================================================= -->
+    
+    <!-- Bootstrap 5.3.2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
+          crossorigin="anonymous">
+    
+    <!-- Font Awesome 6.5.1 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+          rel="stylesheet" 
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+          crossorigin="anonymous">
+    
+    <!-- Google Fonts - Roboto & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" 
+          rel="stylesheet">
+    
+    <!-- Animate.css pour les animations -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" 
+          rel="stylesheet" 
+          integrity="sha512-c42qTSw/wPZ3/5LBzD+Bw5f7bSF2oxou6wEb+I/lqeaKV5FDIfMvvRp772y4jcJLKuGUOpbJMdg/BTl50fJYAw==" 
+          crossorigin="anonymous">
+    
+    <!-- SweetAlert2 pour les notifications -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css" 
+          rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/forms.css" rel="stylesheet">
+    <link href="assets/css/animations.css" rel="stylesheet">
+    
+    <!-- =============================================================================
+         CUSTOM STYLES INTÉGRÉS
+         ============================================================================= -->
+    <style>
+        :root {
+            /* Palette de couleurs ESI */
+            --esi-primary: #0066cc;
+            --esi-secondary: #004499;
+            --esi-accent: #00ccff;
+            --esi-success: #00cc66;
+            --esi-warning: #ffaa00;
+            --esi-danger: #ff4444;
+            --esi-dark: #1a1d29;
+            --esi-light: #f8f9fa;
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, var(--esi-primary), var(--esi-accent));
+            --gradient-dark: linear-gradient(135deg, #1a1d29, #2d3748);
+            --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            
+            /* Shadows */
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+            --shadow-lg: 0 8px 25px rgba(0,0,0,0.2);
+            --shadow-xl: 0 12px 40px rgba(0,0,0,0.25);
+            
+            /* Transitions */
+            --transition-fast: 0.2s ease;
+            --transition-medium: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Roboto', sans-serif;
+            background: var(--gradient-dark);
+            color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Arrière-plan animé */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 102, 204, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 204, 255, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 204, 102, 0.2) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundPulse 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes backgroundPulse {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* Styles de la page de connexion */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: var(--gradient-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            transition: var(--transition-medium);
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--esi-accent);
+            box-shadow: 0 0 0 0.2rem rgba(0, 204, 255, 0.25);
+            color: #ffffff;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: var(--transition-medium);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alerts personnalisées */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-danger {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 68, 68, 0.3);
+        }
+
+        .alert-success {
+            background: rgba(0, 204, 102, 0.2);
+            color: #51cf66;
+            border: 1px solid rgba(0, 204, 102, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .login-card {
+                padding: 2rem;
+                margin: 1rem;
+            }
+        }
+
+        /* Animations d'entrée */
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- =============================================================================
+         CONTENU PRINCIPAL - PAGE DE CONNEXION
+         ============================================================================= -->
+    
+    <div class="login-container animate-fade-in">
+        <div class="login-card animate-slide-up">
+            <!-- Logo et titre -->
+            <div class="logo-container">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h2 class="mb-1">EvalESI Pro</h2>
+                <p class="text-muted">Système d'évaluation des enseignements</p>
+            </div>
+
+            <!-- Zone d'alerte -->
+            <div id="alertContainer"></div>
+
+            <!-- Formulaire de connexion -->
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope me-2"></i>Email
+                    </label>
+                    <input type="email" 
+                           class="form-control" 
+                           id="email" 
+                           placeholder="votre.email@esi.dz"
+                           required
+                           autocomplete="email">
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock me-2"></i>Mot de passe
+                    </label>
+                    <input type="password" 
+                           class="form-control" 
+                           id="password" 
+                           placeholder="••••••••"
+                           required
+                           autocomplete="current-password">
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">
+                        Se souvenir de moi
+                    </label>
+                </div>
+
+                <button type="submit" 
+                        class="btn btn-primary w-100 mb-3"
+                        aria-label="Se connecter"
+                        role="button">
+                    <span id="loginText">
+                        <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                    </span>
+                    <span id="loginSpinner" class="spinner d-none"></span>
+                </button>
+
+            </form>
+
+            <!-- Message de version -->
+            <div class="mt-4 text-center">
+                <small class="text-muted">
+                    <i class="fas fa-code me-1"></i>EvalESI Pro v1.0.0
+                    <br>
+                    <i class="fas fa-shield-alt me-1"></i>© 2025 ESI. Tous droits réservés.
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.js"></script>
+    <script src="/assets/js/mock-data.js"></script>
+    <script type="module" src="/assets/js/supabase-client.js"></script>
+    <script type="module">         
+
+        // Configuration Alpine.js
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('login', () => ({
+                email: '',
+                password: '',
+                isLoading: false,
+                rememberMe: false,
+
+                async login() {
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    const { success, error } = await supabaseClient.login(email, password);
+                    if (success) {
+                        window.location.href = '/pages/dashboard.html';
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erreur de connexion',
+                            text: error
+                        });
+                    }
+                },
+
+                showError(message) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: message,
+                        confirmButtonColor: '#0066cc'
+                    });
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'alert alert-danger';
+                    errorDiv.textContent = message;
+                    document.querySelector('.container').prepend(errorDiv);
+                    setTimeout(() => errorDiv.remove(), 5000); // Supprime après 5 secondes
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

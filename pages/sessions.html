@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="dark" dir="ltr">
+<head>
+    <!-- =============================================================================
+         MÉTA-DONNÉES - Configuration optimisée pour la gestion des sessions
+         ============================================================================= -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EvalESI Pro - Gestion des Sessions d'Évaluation">
+    <meta name="author" content="ESI - École Supérieure d'Informatique">
+    <meta name="keywords" content="EvalESI, sessions, évaluation, gestion">
+    <meta name="theme-color" content="#0066cc">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="language" content="fr">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    
+    <title>EvalESI Pro - Gestion des Sessions</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/apple-touch-icon.png"> 
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon.svg">  
+    
+    <!-- =============================================================================
+         CDN IMPORTS - Versions fixes et optimisées
+         ============================================================================= -->
+    
+    <!-- Bootstrap 5.3.2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
+          crossorigin="anonymous">
+    
+    <!-- Font Awesome 6.5.1 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+          rel="stylesheet" 
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+          crossorigin="anonymous">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" 
+          rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/forms.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+</head>
+
+<body>
+    <!-- =============================================================================
+         STRUCTURE PRINCIPALE - Layout de la gestion des sessions
+         ============================================================================= -->
+    <div class="dashboard-wrapper" x-data="sessions">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" :class="{ 'collapsed': isSidebarCollapsed }">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1 class="sidebar-title">EvalESI Pro</h1>
+                <p class="sidebar-subtitle">Dashboard Administrateur</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h2 class="nav-section-title">Navigation</h2>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-home"></i>
+                                <span class="nav-text">Tableau de bord</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="analytics.html" class="nav-link">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <span class="nav-text">Statistiques</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="teachers.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <span class="nav-text">Enseignants</span>                                 
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="sessions.html" class="nav-link active">
+                                <i class="nav-icon fas fa-calendar-alt"></i>
+                                <span class="nav-text">Sessions</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                 
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Navigation Bar -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="sidebar-toggle" @click="isSidebarCollapsed = !isSidebarCollapsed">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="page-title">Gestion des Sessions</h2>
+                </div>
+                
+                <div class="navbar-right">
+                    <div class="navbar-stats">
+                        <div class="stat-item">
+                            <span class="stat-value" x-text="stats.totalSessions">0</span>
+                            <span class="stat-label">Sessions</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" x-text="stats.activeSessions">0</span>
+                            <span class="stat-label">Actives</span>
+                        </div>
+                    </div>
+                    
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Content Container -->
+            <div class="content-container">
+                <!-- Loading State -->
+                <div x-show="isLoading" class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                </div>
+
+                <!-- Sessions List -->
+                <div class="sessions-grid">
+                    <div class="sessions-header">
+                        <h3>Liste des Sessions</h3>
+                        <button class="btn btn-primary" @click="showAddSessionModal">
+                            <i class="fas fa-plus"></i> Nouvelle Session
+                        </button>
+                    </div>
+
+                    <div class="sessions-table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Enseignant</th>
+                                    <th>Module</th>
+                                    <th>Statut</th>
+                                    <th>Réponses</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="session in sessions" :key="session.id">
+                                    <tr>
+                                        <td x-text="formatDate(session.date)"></td>
+                                        <td x-text="session.enseignant"></td>
+                                        <td x-text="session.module"></td>
+                                        <td>
+                                            <span class="badge" :class="getStatusClass(session.status)"
+                                                  x-text="getStatusText(session.status)">
+                                            </span>
+                                        </td>
+                                        <td x-text="session.reponses + '/' + session.total"></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info" @click="editSession(session)">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" @click="deleteSession(session)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal d'ajout de session -->
+    <div class="modal fade" id="addSessionModal" tabindex="-1" aria-labelledby="addSessionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSessionModalLabel">Nouvelle Session d'Évaluation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSessionForm">
+                        <div class="mb-3">
+                            <label for="sessionDate" class="form-label">Date d'évaluation</label>
+                            <input type="date" class="form-control" id="sessionDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sessionTeacher" class="form-label">Enseignant</label>
+                            <select class="form-select" id="sessionTeacher" required>
+                                <option value="">Sélectionner un enseignant</option>
+                                <template x-for="teacher in teachers" :key="teacher.id">
+                                    <option :value="teacher.id" x-text="teacher.nom"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sessionModule" class="form-label">Module</label>
+                            <input type="text" class="form-control" id="sessionModule" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sessionStatus" class="form-label">Statut</label>
+                            <select class="form-select" id="sessionStatus" required>
+                                <option value="pending">En attente</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Terminée</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" @click="submitAddSession">Créer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =============================================================================
+         SCRIPTS - Chargement optimisé des dépendances
+         ============================================================================= -->
+    
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" 
+            crossorigin="anonymous"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Scripts -->
+    <script src="/assets/js/mock-data.js"></script>
+    <script type="module" src="../assets/js/supabase-client.js"></script>
+    <script type="module" src="../assets/js/sessions.js"></script>
+</body>
+</html> 

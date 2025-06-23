@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="dark" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EvalESI Pro - Paramètres - Gestion des utilisateurs et des droits">
+    <meta name="author" content="ESI - École Supérieure d'Informatique">
+    <meta name="keywords" content="EvalESI, paramètres, utilisateurs, droits, administration">
+    <meta name="theme-color" content="#0066cc">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="language" content="fr">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    
+    <title>EvalESI Pro - Paramètres</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon.svg">
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/forms.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+</head>
+
+<body>
+    <div class="dashboard-wrapper" x-data="parametres">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" :class="{ 'collapsed': isSidebarCollapsed }">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1 class="sidebar-title">EvalESI Pro</h1>
+                <p class="sidebar-subtitle">Paramètres</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h2 class="nav-section-title">Navigation</h2>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-home"></i>
+                                <span class="nav-text">Tableau de bord</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="create-evaluation.html" class="nav-link">
+                                <i class="nav-icon fas fa-plus-circle"></i>
+                                <span class="nav-text">Créer évaluation</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="analytics.html" class="nav-link">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <span class="nav-text">Statistiques</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="teachers.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <span class="nav-text">Enseignants</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="sessions.html" class="nav-link">
+                                <i class="nav-icon fas fa-calendar-alt"></i>
+                                <span class="nav-text">Sessions</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <h2 class="nav-section-title">Administration</h2>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="parametres.html" class="nav-link active">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <span class="nav-text">Paramètres</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-user-shield"></i>
+                                <span class="nav-text">Sécurité</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Navigation Bar -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="sidebar-toggle" @click="isSidebarCollapsed = !isSidebarCollapsed">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="page-title">Paramètres</h2>
+                </div>
+                
+                <div class="navbar-right">
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Content Container -->
+            <div class="content-container">
+                <!-- Settings Header -->
+                <div class="dashboard-header">
+                    <h1>Gestion des Paramètres</h1>
+                    <p>Configurez les utilisateurs et les droits d'accès</p>
+                </div>
+
+                <!-- Loading State -->
+                <div x-show="isLoading" class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                </div>
+
+                <!-- Settings Tabs -->
+                <div class="settings-tabs">
+                    <button class="tab-button" 
+                            :class="{ 'active': activeTab === 'users' }"
+                            @click="activeTab = 'users'">
+                        <i class="fas fa-users"></i>
+                        Utilisateurs
+                    </button>
+                    <button class="tab-button"
+                            :class="{ 'active': activeTab === 'roles' }"
+                            @click="activeTab = 'roles'">
+                        <i class="fas fa-user-shield"></i>
+                        Droits d'accès
+                    </button>
+                </div>
+
+                <!-- Users Management Section -->
+                <div x-show="activeTab === 'users'" class="settings-section">
+                    <div class="section-header">
+                        <h3>Gestion des Utilisateurs</h3>
+                        <button class="btn btn-primary" @click="showAddUserModal">
+                            <i class="fas fa-plus"></i>
+                            Ajouter un utilisateur
+                        </button>
+                    </div>
+
+                    <div class="users-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Rôle</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="user in users" :key="user.id">
+                                    <tr>
+                                        <td x-text="user.name"></td>
+                                        <td x-text="user.email"></td>
+                                        <td>
+                                            <span class="badge" :class="'bg-' + getRoleBadgeClass(user.role)"
+                                                  x-text="user.role"></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge" :class="'bg-' + (user.active ? 'success' : 'danger')"
+                                                  x-text="user.active ? 'Actif' : 'Inactif'"></span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" @click="editUser(user)">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" @click="deleteUser(user)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Roles Management Section -->
+                <div x-show="activeTab === 'roles'" class="settings-section">
+                    <div class="section-header">
+                        <h3>Gestion des Droits d'Accès</h3>
+                        <button class="btn btn-primary" @click="showAddRoleModal">
+                            <i class="fas fa-plus"></i>
+                            Ajouter un rôle
+                        </button>
+                    </div>
+
+                    <div class="roles-grid">
+                        <template x-for="role in roles" :key="role.id">
+                            <div class="role-card">
+                                <div class="role-header">
+                                    <h4 x-text="role.name"></h4>
+                                    <span class="badge" :class="'bg-' + getRoleBadgeClass(role.level)"
+                                          x-text="role.level"></span>
+                                </div>
+                                <div class="role-permissions">
+                                    <template x-for="permission in role.permissions" :key="permission">
+                                        <span class="permission-badge" x-text="permission"></span>
+                                    </template>
+                                </div>
+                                <div class="role-actions">
+                                    <button class="btn btn-sm btn-primary" @click="editRole(role)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" @click="deleteRole(role)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un utilisateur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="addUser">
+                        <div class="mb-3">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-control" x-model="newUser.name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" x-model="newUser.email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Rôle</label>
+                            <select class="form-select" x-model="newUser.role" required>
+                                <template x-for="role in roles" :key="role.id">
+                                    <option :value="role.name" x-text="role.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe</label>
+                            <input type="password" class="form-control" x-model="newUser.password" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" @click="submitNewUser">Ajouter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Role Modal -->
+    <div class="modal fade" id="addRoleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un rôle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="addRole">
+                        <div class="mb-3">
+                            <label class="form-label">Nom du rôle</label>
+                            <input type="text" class="form-control" x-model="newRole.name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Niveau</label>
+                            <select class="form-select" x-model="newRole.level" required>
+                                <option value="admin">Administrateur</option>
+                                <option value="moderator">Modérateur</option>
+                                <option value="user">Utilisateur</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Permissions</label>
+                            <div class="permissions-grid">
+                                <template x-for="permission in availablePermissions" :key="permission">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               :value="permission" x-model="newRole.permissions">
+                                        <label class="form-check-label" x-text="permission"></label>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" @click="submitNewRole">Ajouter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script type="module" src="../assets/js/supabase-client.js"></script>
+    <script type="module" src="../assets/js/parametres.js"></script>
+</body>
+</html> 
