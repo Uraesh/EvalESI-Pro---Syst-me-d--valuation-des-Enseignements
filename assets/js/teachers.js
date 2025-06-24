@@ -102,17 +102,30 @@ document.addEventListener('alpine:init', () => {
 
                 const teacherData = {
                     nom: document.getElementById('teacherName').value,
-                    specialite: document.getElementById('teacherSpecialty').value,
+                    prenom: document.getElementById('teacherPrenom').value,
                     email: document.getElementById('teacherEmail').value,
+                    telephone: document.getElementById('teacherPhone').value,
+                    specialite: document.getElementById('teacherSpecialty').value,
+                    date_embauche: document.getElementById('teacherHireDate').value,
                     status: document.getElementById('teacherStatus').value,
                     evaluations: 0
                 };
 
-                const { error } = await supabaseClient
+                // Désactiver le bouton pendant l'insertion
+                const submitButton = form.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> En cours...';
+
+                const { data, error } = await supabaseClient
                     .from('enseignants')
-                    .insert([teacherData]);
+                    .insert([teacherData])
+                    .select('*'); // Pour récupérer l'enseignant inséré
 
                 if (error) throw error;
+
+                // Ajouter l'enseignant au tableau existant
+                this.teachers.unshift(data[0]);
+                this.updateStats();
 
                 // Fermer le modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addTeacherModal'));
@@ -121,12 +134,47 @@ document.addEventListener('alpine:init', () => {
                 // Réinitialiser le formulaire
                 form.reset();
 
-                // Recharger la liste des enseignants
-                await this.loadTeachers();
+                // Réactiver le bouton
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-plus"></i> Ajouter';
+
                 this.showSuccess('Enseignant ajouté avec succès');
             } catch (error) {
                 console.error('Erreur d\'ajout:', error);
                 this.showError('Erreur lors de l\'ajout de l\'enseignant');
+            }
+        },
+
+        // Ajouter une méthode pour charger un enseignant spécifique
+        async loadTeacher(id) {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('enseignants')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+                return data;
+            } catch (error) {
+                console.error('Erreur lors du chargement:', error);
+                throw error;
+            }
+        },
+
+        // Ajouter une méthode pour mettre à jour un enseignant
+        async updateTeacher(teacherId, updates) {
+            try {
+                const { error } = await supabaseClient
+                    .from('enseignants')
+                    .update(updates)
+                    .eq('id', teacherId);
+
+                if (error) throw error;
+                return true;
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour:', error);
+                throw error;
             }
         },
 

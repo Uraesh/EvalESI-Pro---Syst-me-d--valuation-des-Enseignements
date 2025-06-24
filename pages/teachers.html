@@ -51,6 +51,7 @@
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="../assets/css/forms.css">
     <link rel="stylesheet" href="../assets/css/animations.css">
+    <link rel="stylesheet" href="../assets/css/modal-styles.css">
 </head>
 
 <body>
@@ -79,6 +80,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="create-evaluation.html" class="nav-link">
+                                <i class="nav-icon fas fa-plus-circle"></i>
+                                <span class="nav-text">Créer évaluation</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="analytics.html" class="nav-link">
                                 <i class="nav-icon fas fa-chart-line"></i>
                                 <span class="nav-text">Statistiques</span>
@@ -87,13 +94,37 @@
                         <li class="nav-item">
                             <a href="teachers.html" class="nav-link active">
                                 <i class="nav-icon fas fa-users"></i>
-                                <span class="nav-text">Enseignants</span>                                 
+                                <span class="nav-text">Enseignants</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="sessions.html" class="nav-link">
                                 <i class="nav-icon fas fa-calendar-alt"></i>
                                 <span class="nav-text">Sessions</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="analytics.html" class="nav-link">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <span class="nav-text">Rapports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <h2 class="nav-section-title">Administration</h2>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="parametres.html" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <span class="nav-text">Paramètres</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-user-shield"></i>
+                                <span class="nav-text">Sécurité</span>
                             </a>
                         </li>
                     </ul>
@@ -116,11 +147,11 @@
                 <div class="navbar-right">
                     <div class="navbar-stats">
                         <div class="stat-item">
-                            <span class="stat-value" x-text="stats.totalTeachers">0</span>
+                            <span class="stat-value" x-text="stats.totalTeachers"></span>
                             <span class="stat-label">Enseignants</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" x-text="stats.activeTeachers">0</span>
+                            <span class="stat-value" x-text="stats.activeTeachers"></span>
                             <span class="stat-label">Actifs</span>
                         </div>
                     </div>
@@ -144,17 +175,22 @@
                 <div class="teachers-grid">
                     <div class="teachers-header">
                         <h3>Liste des Enseignants</h3>
-                        <button class="btn btn-primary" @click="showAddTeacherModal">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTeacherModal">
                             <i class="fas fa-plus"></i> Ajouter un enseignant
                         </button>
                     </div>
+                    <br>
 
                     <div class="teachers-table">
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>Nom</th>
+                                    <th>Prénom</th>
                                     <th>Spécialité</th>
+                                    <th>Téléphone</th>
+                                    <th>Email</th>
+                                    <th>Date d'embauche</th>
                                     <th>Statut</th>
                                     <th>Évaluations</th>
                                     <th>Actions</th>
@@ -163,8 +199,12 @@
                             <tbody>
                                 <template x-for="teacher in teachers" :key="teacher.id">
                                     <tr>
-                                        <td x-text="teacher.name"></td>
-                                        <td x-text="teacher.specialty"></td>
+                                        <td x-text="teacher.nom"></td>
+                                        <td x-text="teacher.prenom"></td>
+                                        <td x-text="teacher.specialite"></td>
+                                        <td x-text="teacher.telephone"></td>
+                                        <td x-text="teacher.email"></td>
+                                        <td x-text="teacher.date_embauche"></td>
                                         <td>
                                             <span class="badge" :class="teacher.status === 'active' ? 'bg-success' : 'bg-warning'"
                                                   x-text="teacher.status === 'active' ? 'Actif' : 'Inactif'">
@@ -191,25 +231,37 @@
 
     <!-- Modal d'ajout d'enseignant -->
     <div class="modal fade" id="addTeacherModal" tabindex="-1" aria-labelledby="addTeacherModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-fullscreen modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addTeacherModalLabel">Ajouter un enseignant</h5>
+                    <h5 class="modal-title" id="addTeacherModalLabel">Nouvel Enseignant</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="addTeacherForm">
                         <div class="mb-3">
-                            <label for="teacherName" class="form-label">Nom complet</label>
+                            <label for="teacherName" class="form-label">Nom</label>
                             <input type="text" class="form-control" id="teacherName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="teacherPrenom" class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="teacherPrenom" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="teacherEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="teacherEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="teacherPhone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="teacherPhone" required>
                         </div>
                         <div class="mb-3">
                             <label for="teacherSpecialty" class="form-label">Spécialité</label>
                             <input type="text" class="form-control" id="teacherSpecialty" required>
                         </div>
                         <div class="mb-3">
-                            <label for="teacherEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="teacherEmail" required>
+                            <label for="teacherHireDate" class="form-label">Date d'embauche</label>
+                            <input type="date" class="form-control" id="teacherHireDate" required>
                         </div>
                         <div class="mb-3">
                             <label for="teacherStatus" class="form-label">Statut</label>
@@ -222,7 +274,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" @click="submitAddTeacher">Ajouter</button>
+                    <button type="button" class="btn btn-primary" @click="submitAddTeacher" data-bs-dismiss="modal">Ajouter</button>
                 </div>
             </div>
         </div>

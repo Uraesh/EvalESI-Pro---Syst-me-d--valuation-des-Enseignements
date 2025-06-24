@@ -1,0 +1,26 @@
+/*
+ * MODAL-STYLE.CSS - Styles personnalisés pour les modals
+ * =============================================================================
+ */
+
+ .modal-fullscreen {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    height: 50vh !important;
+    max-height: 50vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.modal-fullscreen .modal-content {
+    width: 50% !important;
+    max-width: 90% !important;
+    height: 90% !important;
+    max-height: 90% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    border-radius: 15px !important;
+    overflow: hidden !important;
+}

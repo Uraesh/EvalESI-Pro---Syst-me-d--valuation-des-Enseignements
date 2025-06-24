@@ -124,14 +124,15 @@ document.addEventListener('alpine:init', () => {
                     return;
                 }
                 const sessionData = {
-                    date_evaluation: document.getElementById('sessionDate').value,
+                    date_ouverture: document.getElementById('sessionDateStart').value,
+                    date_fermeture: document.getElementById('sessionDateEnd').value,
                     enseignant_id: document.getElementById('sessionTeacher').value,
-                    module: document.getElementById('sessionModule').value,
+                    titre: document.getElementById('sessionModule').value,
                     status: document.getElementById('sessionStatus').value,
                     reponses: 0,
                     total: 0
                 };
-                if (!sessionData.enseignant_id || !sessionData.module) {
+                if (!sessionData.enseignant_id || !sessionData.titre) {
                     this.showError('Veuillez remplir tous les champs requis');
                     return;
                 }

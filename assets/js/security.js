@@ -1,5 +1,5 @@
 // =============================================================================
-// PARAMÈTRES.JS - Gestion des paramètres et des droits d'accès
+// SECURITY.JS - Gestion de la sécurité et des rôles
 // =============================================================================
 
 // Import des dépendances
@@ -7,11 +7,10 @@ import { supabaseClient } from './supabase-client.js';
 import Swal from 'sweetalert2';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Configuration Alpine.js pour la gestion des paramètres
-    Alpine.store('parametres', {
+    // Configuration Alpine.js pour la gestion de la sécurité
+    Alpine.store('security', {
         // État de l'application
         isLoading: false,
-        activeTab: 'system',
         
         // Données utilisateurs et rôles
         users: [],
@@ -21,135 +20,53 @@ document.addEventListener('DOMContentLoaded', () => {
         newUser: null,
         newRole: null,
         
-        // Configuration système
-        systemConfig: {
-            authMode: 'local',
-            defaultSessionDuration: 60,
-            minResponses: 10,
-            linkExpiry: 24
-        },
-        
-        // Configuration sécurité
-        securityConfig: {
-            passwordMinLength: 8,
-            passwordExpiry: 90,
-            sessionMaxDuration: 8,
-            sessionInactivityTimeout: 30,
-            logRetention: 90,
-            auditNotifications: 'critical'
-        },
-        
-        // Configuration évaluations
-        evaluationConfig: {
-            criteria: [
-                { name: 'Intérêt de l\'enseignant pour son cours', weight: 1 },
-                { name: 'Clarté de l\'exposé', weight: 1 },
-                { name: 'Adéquation des supports', weight: 1 },
-                { name: 'Qualité des interactions', weight: 1 }
-            ],
-            minScale: 1,
-            maxScale: 5
-        },
-        
-        // Configuration notifications
-        notificationConfig: {
-            smtpHost: '',
-            smtpPort: 587,
-            invitationTemplate: 'Bonjour,\n\nVous êtes invité(e) à participer à une évaluation.\n\nLien: {{link}}\n\nMerci de votre participation.',
-            reminderTemplate: 'Rappel: Vous avez une évaluation à compléter.\n\nLien: {{link}}',
-            reminderFrequency: 3,
-            maxReminders: 3
-        },
-        
-        // Configuration intégrations
-        integrationConfig: {
-            sisUrl: '',
-            sisApiKey: '',
-            webhookUrl: '',
-            webhookSecret: ''
-        },
-
-        // Méthodes de gestion des paramètres
-        saveSettings() {
-            // Sauvegarde des paramètres dans le backend
-            return fetch('/api/settings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    system: this.systemConfig,
-                    security: this.securityConfig,
-                    evaluations: this.evaluationConfig,
-                    notifications: this.notificationConfig,
-                    integrations: this.integrationConfig
-                })
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error('Erreur lors de la sauvegarde des paramètres');
-                }
-                return response.json();
-            });
-        },
-
-        loadSettings() {
-            // Chargement des paramètres depuis le backend
-            return fetch('/api/settings')
-                .then(response => response.json())
-                .then(data => {
-                    this.systemConfig = data.system || this.systemConfig;
-                    this.securityConfig = data.security || this.securityConfig;
-                    this.evaluationConfig = data.evaluations || this.evaluationConfig;
-                    this.notificationConfig = data.notifications || this.notificationConfig;
-                    this.integrationConfig = data.integrations || this.integrationConfig;
-                });
-        },
-
-        addCriterion() {
-            // Ajout d'un nouveau critère d'évaluation
-            this.evaluationConfig.criteria.push({ name: '', weight: 1 });
-        },
-
-        removeCriterion(index) {
-            // Suppression d'un critère d'évaluation
-            this.evaluationConfig.criteria.splice(index, 1);
-        },
+        // Liste des permissions disponibles
+        availablePermissions: [
+            'view_dashboard',
+            'create_evaluation',
+            'manage_users',
+            'manage_roles',
+            'view_reports',
+            'export_data'
+        ],
 
         // Méthodes d'initialisation
         init() {
-            // Initialisation de l'application et chargement des données
-            this.loadSettings();
+            this.loadUsers();
+            this.loadRoles();
             this.checkAuth();
         },
 
         checkAuth() {
-            // Vérification de l'authentification de l'utilisateur
             if (!localStorage.getItem('token')) {
                 window.location.href = '/login.html';
             }
         },
 
         // Méthodes de gestion des utilisateurs
-        loadUsers() {
-            // Chargement de la liste des utilisateurs depuis Supabase
-            return supabaseClient
-                .from('users')
-                .select('*')
-                .then(({ data, error }) => {
-                    if (error) throw error;
-                    this.users = data;
-                });
+        async loadUsers() {
+            try {
+                this.isLoading = true;
+                const { data, error } = await supabaseClient
+                    .from('users')
+                    .select('*');
+                
+                if (error) throw error;
+                this.users = data;
+            } catch (error) {
+                this.showError('Erreur lors du chargement des utilisateurs');
+            } finally {
+                this.isLoading = false;
+            }
         },
 
         showAddUserModal() {
-            // Affichage du modal d'ajout d'utilisateur
+            this.newUser = { name: '', email: '', role: 'user' };
             const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
             modal.show();
-            this.newUser = { name: '', email: '', role: 'user' };
         },
 
         async submitNewUser() {
-            // Soumission du formulaire d'ajout d'utilisateur
             try {
                 const { error } = await supabaseClient
                     .from('users')
@@ -167,14 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         editUser(user) {
-            // Préparation de la modification d'un utilisateur
             this.selectedUser = user;
             const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
             modal.show();
         },
 
         async deleteUser(user) {
-            // Suppression d'un utilisateur avec confirmation
             try {
                 const { isConfirmed } = await Swal.fire({
                     title: 'Confirmer la suppression',
@@ -201,27 +116,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        // Méthodes de gestion des boutons
+        getActionButtonClass() {
+            return {
+                'btn-primary': true,
+                'd-flex': true,
+                'align-items': 'center',
+                'gap': 'var(--spacing-sm)'
+            };
+        },
+
+        getActionButtonIcon(icon) {
+            return `<i class="fas fa-${icon}"></i>`;
+        },
+
         // Méthodes de gestion des rôles
-        loadRoles() {
-            // Chargement de la liste des rôles depuis Supabase
-            return supabaseClient
-                .from('roles')
-                .select('*')
-                .then(({ data, error }) => {
-                    if (error) throw error;
-                    this.roles = data;
-                });
+        async loadRoles() {
+            try {
+                this.isLoading = true;
+                const { data, error } = await supabaseClient
+                    .from('roles')
+                    .select('*');
+                
+                if (error) throw error;
+                this.roles = data;
+            } catch (error) {
+                this.showError('Erreur lors du chargement des rôles');
+            } finally {
+                this.isLoading = false;
+            }
         },
 
         showAddRoleModal() {
-            // Affichage du modal d'ajout de rôle
+            this.newRole = { name: '', permissions: [] };
             const modal = new bootstrap.Modal(document.getElementById('addRoleModal'));
             modal.show();
-            this.newRole = { name: '', permissions: [] };
         },
 
         async submitNewRole() {
-            // Soumission du formulaire d'ajout de rôle
             try {
                 const { error } = await supabaseClient
                     .from('roles')
@@ -239,14 +171,12 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         editRole(role) {
-            // Préparation de la modification d'un rôle
             this.selectedRole = role;
             const modal = new bootstrap.Modal(document.getElementById('editRoleModal'));
             modal.show();
         },
 
         async deleteRole(role) {
-            // Suppression d'un rôle avec confirmation
             try {
                 const { isConfirmed } = await Swal.fire({
                     title: 'Confirmer la suppression',
@@ -275,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Méthodes utilitaires
         getRoleBadgeClass(role) {
-            // Retourne la classe CSS pour le badge de rôle selon son type
             const classes = {
                 'admin': 'danger',
                 'moderator': 'warning',
@@ -285,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         showError(message) {
-            // Affiche une notification d'erreur avec SweetAlert2 et un message temporaire
             Swal.fire({
                 icon: 'error',
                 title: 'Erreur',
@@ -300,7 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         showSuccess(message) {
-            // Affiche une notification de succès avec SweetAlert2 et un message temporaire
             Swal.fire({
                 icon: 'success',
                 title: 'Succès',
@@ -315,6 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initialisation Alpine.js pour démarrer l'application
+    // Initialisation Alpine.js
     Alpine.start();
 });

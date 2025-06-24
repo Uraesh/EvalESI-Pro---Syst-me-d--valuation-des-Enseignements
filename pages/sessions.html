@@ -51,6 +51,7 @@
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="../assets/css/forms.css">
     <link rel="stylesheet" href="../assets/css/animations.css">
+    <link rel="stylesheet" href="../assets/css/modal-styles.css">
 </head>
 
 <body>
@@ -79,6 +80,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="create-evaluation.html" class="nav-link">
+                                <i class="nav-icon fas fa-plus-circle"></i>
+                                <span class="nav-text">Créer évaluation</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="analytics.html" class="nav-link">
                                 <i class="nav-icon fas fa-chart-line"></i>
                                 <span class="nav-text">Statistiques</span>
@@ -87,13 +94,37 @@
                         <li class="nav-item">
                             <a href="teachers.html" class="nav-link">
                                 <i class="nav-icon fas fa-users"></i>
-                                <span class="nav-text">Enseignants</span>                                 
+                                <span class="nav-text">Enseignants</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="sessions.html" class="nav-link active">
                                 <i class="nav-icon fas fa-calendar-alt"></i>
                                 <span class="nav-text">Sessions</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="analytics.html" class="nav-link">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <span class="nav-text">Rapports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <h2 class="nav-section-title">Administration</h2>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="parametres.html" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <span class="nav-text">Paramètres</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-user-shield"></i>
+                                <span class="nav-text">Sécurité</span>
                             </a>
                         </li>
                     </ul>
@@ -117,11 +148,11 @@
                 <div class="navbar-right">
                     <div class="navbar-stats">
                         <div class="stat-item">
-                            <span class="stat-value" x-text="stats.totalSessions">0</span>
+                            <span class="stat-value" x-text="stats.totalSessions"></span>
                             <span class="stat-label">Sessions</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" x-text="stats.activeSessions">0</span>
+                            <span class="stat-value" x-text="stats.activeSessions"></span>
                             <span class="stat-label">Actives</span>
                         </div>
                     </div>
@@ -143,18 +174,19 @@
 
                 <!-- Sessions List -->
                 <div class="sessions-grid">
-                    <div class="sessions-header">
+                    <div class="teachers-header">
                         <h3>Liste des Sessions</h3>
-                        <button class="btn btn-primary" @click="showAddSessionModal">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSessionModal">
                             <i class="fas fa-plus"></i> Nouvelle Session
                         </button>
                     </div>
-
-                    <div class="sessions-table">
+<br>
+                    <div class="teachers-table">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
+                                    <th>Date de début</th>
+                                    <th>Date de fin</th>
                                     <th>Enseignant</th>
                                     <th>Module</th>
                                     <th>Statut</th>
@@ -165,7 +197,8 @@
                             <tbody>
                                 <template x-for="session in sessions" :key="session.id">
                                     <tr>
-                                        <td x-text="formatDate(session.date)"></td>
+                                        <td x-text="formatDate(session.dateStart)"></td>
+                                        <td x-text="formatDate(session.dateEnd)"></td>
                                         <td x-text="session.enseignant"></td>
                                         <td x-text="session.module"></td>
                                         <td>
@@ -194,7 +227,7 @@
 
     <!-- Modal d'ajout de session -->
     <div class="modal fade" id="addSessionModal" tabindex="-1" aria-labelledby="addSessionModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-fullscreen modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addSessionModalLabel">Nouvelle Session d'Évaluation</h5>
@@ -203,8 +236,12 @@
                 <div class="modal-body">
                     <form id="addSessionForm">
                         <div class="mb-3">
-                            <label for="sessionDate" class="form-label">Date d'évaluation</label>
-                            <input type="date" class="form-control" id="sessionDate" required>
+                            <label for="sessionDateStart" class="form-label">Date de début</label>
+                            <input type="date" class="form-control" id="sessionDateStart" name="date_ouverture" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sessionDateEnd" class="form-label">Date de fin</label>
+                            <input type="date" class="form-control" id="sessionDateEnd" name="date_fermeture" required>
                         </div>
                         <div class="mb-3">
                             <label for="sessionTeacher" class="form-label">Enseignant</label>
@@ -231,11 +268,11 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" @click="submitAddSession">Créer</button>
+                    <button type="button" class="btn btn-primary" @click="submitAddSession" data-bs-dismiss="modal">Créer</button>
                 </div>
             </div>
         </div>
-    </div>
+    </div>     
 
     <!-- =============================================================================
          SCRIPTS - Chargement optimisé des dépendances

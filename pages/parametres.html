@@ -82,6 +82,12 @@
                                 <span class="nav-text">Sessions</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="analytics.html" class="nav-link">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <span class="nav-text">Rapports</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 
@@ -95,7 +101,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="security.html" class="nav-link">
                                 <i class="nav-icon fas fa-user-shield"></i>
                                 <span class="nav-text">Sécurité</span>
                             </a>
@@ -141,101 +147,244 @@
                 <!-- Settings Tabs -->
                 <div class="settings-tabs">
                     <button class="tab-button" 
-                            :class="{ 'active': activeTab === 'users' }"
-                            @click="activeTab = 'users'">
-                        <i class="fas fa-users"></i>
-                        Utilisateurs
+                            :class="{ 'active': activeTab === 'system' }"
+                            @click="activeTab = 'system'">
+                        <i class="fas fa-cog"></i>
+                        Configuration du Système
                     </button>
                     <button class="tab-button"
-                            :class="{ 'active': activeTab === 'roles' }"
-                            @click="activeTab = 'roles'">
-                        <i class="fas fa-user-shield"></i>
-                        Droits d'accès
+                            :class="{ 'active': activeTab === 'security' }"
+                            @click="activeTab = 'security'">
+                        <i class="fas fa-shield-alt"></i>
+                        Paramètres de Sécurité
+                    </button>
+                    <button class="tab-button"
+                            :class="{ 'active': activeTab === 'evaluations' }"
+                            @click="activeTab = 'evaluations'">
+                        <i class="fas fa-star"></i>
+                        Paramètres des Évaluations
+                    </button>
+                    <button class="tab-button"
+                            :class="{ 'active': activeTab === 'notifications' }"
+                            @click="activeTab = 'notifications'">
+                        <i class="fas fa-bell"></i>
+                        Paramètres des Notifications
+                    </button>
+                    <button class="tab-button"
+                            :class="{ 'active': activeTab === 'integrations' }"
+                            @click="activeTab = 'integrations'">
+                        <i class="fas fa-link"></i>
+                        Intégrations
                     </button>
                 </div>
 
-                <!-- Users Management Section -->
-                <div x-show="activeTab === 'users'" class="settings-section">
+                <!-- System Configuration Section -->
+                <div x-show="activeTab === 'system'" class="settings-section">
                     <div class="section-header">
-                        <h3>Gestion des Utilisateurs</h3>
-                        <button class="btn btn-primary" @click="showAddUserModal">
-                            <i class="fas fa-plus"></i>
-                            Ajouter un utilisateur
-                        </button>
+                        <h3>Configuration du Système</h3>
                     </div>
 
-                    <div class="users-table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Nom</th>
-                                    <th>Email</th>
-                                    <th>Rôle</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template x-for="user in users" :key="user.id">
-                                    <tr>
-                                        <td x-text="user.name"></td>
-                                        <td x-text="user.email"></td>
-                                        <td>
-                                            <span class="badge" :class="'bg-' + getRoleBadgeClass(user.role)"
-                                                  x-text="user.role"></span>
-                                        </td>
-                                        <td>
-                                            <span class="badge" :class="'bg-' + (user.active ? 'success' : 'danger')"
-                                                  x-text="user.active ? 'Actif' : 'Inactif'"></span>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary" @click="editUser(user)">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" @click="deleteUser(user)">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
+                    <div class="settings-grid">
+                        <div class="settings-group">
+                            <h4>Paramètres généraux</h4>
+                            <div class="form-group">
+                                <label>Mode d'authentification</label>
+                                <select class="form-control" v-model="systemConfig.authMode">
+                                    <option value="local">Local</option>
+                                    <option value="ldap">LDAP</option>
+                                    <option value="saml">SAML</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Durée des sessions</h4>
+                            <div class="form-group">
+                                <label>Durée par défaut des sessions (minutes)</label>
+                                <input type="number" class="form-control" v-model="systemConfig.defaultSessionDuration">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Validation des évaluations</h4>
+                            <div class="form-group">
+                                <label>Nombre minimum de réponses pour validation</label>
+                                <input type="number" class="form-control" v-model="systemConfig.minResponses">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Expiration des liens</h4>
+                            <div class="form-group">
+                                <label>Durée de validité des liens (heures)</label>
+                                <input type="number" class="form-control" v-model="systemConfig.linkExpiry">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Roles Management Section -->
-                <div x-show="activeTab === 'roles'" class="settings-section">
+                <!-- Security Settings Section -->
+                <div x-show="activeTab === 'security'" class="settings-section">
                     <div class="section-header">
-                        <h3>Gestion des Droits d'Accès</h3>
-                        <button class="btn btn-primary" @click="showAddRoleModal">
-                            <i class="fas fa-plus"></i>
-                            Ajouter un rôle
-                        </button>
+                        <h3>Paramètres de Sécurité</h3>
                     </div>
 
-                    <div class="roles-grid">
-                        <template x-for="role in roles" :key="role.id">
-                            <div class="role-card">
-                                <div class="role-header">
-                                    <h4 x-text="role.name"></h4>
-                                    <span class="badge" :class="'bg-' + getRoleBadgeClass(role.level)"
-                                          x-text="role.level"></span>
-                                </div>
-                                <div class="role-permissions">
-                                    <template x-for="permission in role.permissions" :key="permission">
-                                        <span class="permission-badge" x-text="permission"></span>
-                                    </template>
-                                </div>
-                                <div class="role-actions">
-                                    <button class="btn btn-sm btn-primary" @click="editRole(role)">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" @click="deleteRole(role)">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                    <div class="settings-grid">
+                        <div class="settings-group">
+                            <h4>Configuration des mots de passe</h4>
+                            <div class="form-group">
+                                <label>Longueur minimale</label>
+                                <input type="number" class="form-control" v-model="securityConfig.passwordMinLength">
                             </div>
-                        </template>
+                            <div class="form-group">
+                                <label>Expiration (jours)</label>
+                                <input type="number" class="form-control" v-model="securityConfig.passwordExpiry">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Configuration des sessions</h4>
+                            <div class="form-group">
+                                <label>Durée maximale (heures)</label>
+                                <input type="number" class="form-control" v-model="securityConfig.sessionMaxDuration">
+                            </div>
+                            <div class="form-group">
+                                <label>Inactivité avant expiration (minutes)</label>
+                                <input type="number" class="form-control" v-model="securityConfig.sessionInactivityTimeout">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Logs et audit</h4>
+                            <div class="form-group">
+                                <label>Rétention des logs (jours)</label>
+                                <input type="number" class="form-control" v-model="securityConfig.logRetention">
+                            </div>
+                            <div class="form-group">
+                                <label>Notifications d'audit</label>
+                                <select class="form-control" v-model="securityConfig.auditNotifications">
+                                    <option value="all">Tous les événements</option>
+                                    <option value="critical">Événements critiques uniquement</option>
+                                    <option value="none">Désactivé</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evaluations Settings Section -->
+                <div x-show="activeTab === 'evaluations'" class="settings-section">
+                    <div class="section-header">
+                        <h3>Paramètres des Évaluations</h3>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="settings-group">
+                            <h4>Critères d'évaluation</h4>
+                            <div class="form-group">
+                                <label>Critères par défaut</label>
+                                <div class="criteria-list">
+                                    <div v-for="(criterion, index) in evaluationConfig.criteria" :key="index" class="criteria-item">
+                                        <input type="text" class="form-control" v-model="criterion.name">
+                                        <input type="number" class="form-control" v-model="criterion.weight">
+                                        <button class="btn btn-danger btn-sm" @click="removeCriterion(index)" title="Supprimer ce critère">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary btn-sm" @click="addCriterion">Ajouter un critère</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Échelles de notation</h4>
+                            <div class="form-group">
+                                <label>Échelle minimale</label>
+                                <input type="number" class="form-control" v-model="evaluationConfig.minScale">
+                            </div>
+                            <div class="form-group">
+                                <label>Échelle maximale</label>
+                                <input type="number" class="form-control" v-model="evaluationConfig.maxScale">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Settings Section -->
+                <div x-show="activeTab === 'notifications'" class="settings-section">
+                    <div class="section-header">
+                        <h3>Paramètres des Notifications</h3>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="settings-group">
+                            <h4>Configuration des emails</h4>
+                            <div class="form-group">
+                                <label>Serveur SMTP</label>
+                                <input type="text" class="form-control" v-model="notificationConfig.smtpHost">
+                            </div>
+                            <div class="form-group">
+                                <label>Port SMTP</label>
+                                <input type="number" class="form-control" v-model="notificationConfig.smtpPort">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Templates de notifications</h4>
+                            <div class="form-group">
+                                <label>Template d'invitation</label>
+                                <textarea class="form-control" v-model="notificationConfig.invitationTemplate"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Template de rappel</label>
+                                <textarea class="form-control" v-model="notificationConfig.reminderTemplate"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Paramètres de rappels</h4>
+                            <div class="form-group">
+                                <label>Fréquence des rappels (jours)</label>
+                                <input type="number" class="form-control" v-model="notificationConfig.reminderFrequency">
+                            </div>
+                            <div class="form-group">
+                                <label>Nombre maximum de rappels</label>
+                                <input type="number" class="form-control" v-model="notificationConfig.maxReminders">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Integrations Section -->
+                <div x-show="activeTab === 'integrations'" class="settings-section">
+                    <div class="section-header">
+                        <h3>Intégrations</h3>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="settings-group">
+                            <h4>Connexion avec d'autres systèmes</h4>
+                            <div class="form-group">
+                                <label>Système d'information</label>
+                                <input type="text" class="form-control" v-model="integrationConfig.sisUrl">
+                            </div>
+                            <div class="form-group">
+                                <label>API Key</label>
+                                <input type="text" class="form-control" v-model="integrationConfig.sisApiKey">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Webhooks</h4>
+                            <div class="form-group">
+                                <label>URL de callback</label>
+                                <input type="text" class="form-control" v-model="integrationConfig.webhookUrl">
+                            </div>
+                            <div class="form-group">
+                                <label>Secret de validation</label>
+                                <input type="text" class="form-control" v-model="integrationConfig.webhookSecret">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

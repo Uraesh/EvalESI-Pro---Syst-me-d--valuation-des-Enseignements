@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="dark" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EvalESI Pro - Sécurité - Gestion des utilisateurs et des droits">
+    <meta name="author" content="ESI - École Supérieure d'Informatique">
+    <meta name="keywords" content="EvalESI, sécurité, utilisateurs, droits, administration">
+    <meta name="theme-color" content="#0066cc">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="language" content="fr">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    
+    <title>EvalESI Pro - Sécurité</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon.svg">
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/forms.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+    <link rel="stylesheet" href="../assets/css/security.css">
+</head>
+
+<body>
+    <div class="dashboard-wrapper" x-data="security">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" :class="{ 'collapsed': isSidebarCollapsed }">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1 class="sidebar-title">EvalESI Pro</h1>
+                <p class="sidebar-subtitle">Sécurité</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h2 class="nav-section-title">Navigation</h2>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-home"></i>
+                                <span class="nav-text">Tableau de bord</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="create-evaluation.html" class="nav-link">
+                                <i class="nav-icon fas fa-plus-circle"></i>
+                                <span class="nav-text">Créer évaluation</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="analytics.html" class="nav-link">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <span class="nav-text">Statistiques</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="teachers.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <span class="nav-text">Enseignants</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="sessions.html" class="nav-link">
+                                <i class="nav-icon fas fa-calendar-alt"></i>
+                                <span class="nav-text">Sessions</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="analytics.html" class="nav-link">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <span class="nav-text">Rapports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <h2 class="nav-section-title">Administration</h2>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="parametres.html" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <span class="nav-text">Paramètres</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="security.html" class="nav-link active">
+                                <i class="nav-icon fas fa-user-shield"></i>
+                                <span class="nav-text">Sécurité</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Navigation Bar -->
+            <nav class="top-navbar">
+                <div class="navbar-left">
+                    <button class="sidebar-toggle" @click="isSidebarCollapsed = !isSidebarCollapsed">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="page-title">Sécurité</h2>
+                </div>
+                
+                <div class="navbar-right">
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Content Container -->
+            <div class="content-container">
+                <!-- Settings Header -->
+                <div class="dashboard-header">
+                    <h1>Gestion de la Sécurité</h1>
+                    <p>Configurez les utilisateurs et les droits d'accès</p>
+                </div>
+
+                <!-- Loading State -->
+                <div x-show="isLoading" class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                </div>
+
+                <!-- Security Tabs -->
+                <div class="settings-tabs">
+                    <button class="tab-button" 
+                            :class="{ 'active': activeTab === 'users' }"
+                            @click="activeTab = 'users'">
+                        <i class="fas fa-users"></i>
+                        Utilisateurs
+                    </button>
+                    <button class="tab-button"
+                            :class="{ 'active': activeTab === 'roles' }"
+                            @click="activeTab = 'roles'">
+                        <i class="fas fa-user-shield"></i>
+                        Droits d'accès
+                    </button>
+                </div>
+
+                <!-- Users Management Section -->
+                <div x-show="activeTab === 'users'" class="settings-section">
+                    <div class="section-header">
+                        <h3>Gestion des Utilisateurs</h3>
+                        <button class="btn-primary" @click="showAddUserModal">
+                            <i class="fas fa-user-plus"></i>
+                            Ajouter un utilisateur
+                        </button>
+                    </div>
+
+                    <div class="users-list">
+                        <div class="user-card" v-for="user in users" :key="user.id">
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    {{ user.name.charAt(0) }}
+                                </div>
+                                <div class="user-details">
+                                    <h4>{{ user.name }}</h4>
+                                    <p>{{ user.email }}</p>
+                                    <span class="badge" :class="getRoleBadgeClass(user.role)">{{ user.role }}</span>
+                                </div>
+                            </div>
+                            <div class="user-actions">
+                                <button class="btn-secondary" @click="editUser(user)" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-danger" @click="deleteUser(user)" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roles Management Section -->
+                <div x-show="activeTab === 'roles'" class="settings-section">
+                    <div class="section-header">
+                        <h3>Gestion des Droits d'Accès</h3>
+                        <button class="btn-primary" @click="showAddRoleModal">
+                            <i class="fas fa-key"></i>
+                            Ajouter un rôle
+                        </button>
+                    </div>
+
+                    <div class="roles-list">
+                        <div class="role-card" v-for="role in roles" :key="role.id">
+                            <div class="role-info">
+                                <h4>{{ role.name }}</h4>
+                                <div class="role-permissions">
+                                    <div class="permission" v-for="permission in role.permissions" :key="permission">
+                                        <i class="fas fa-check-circle"></i>
+                                        {{ permission }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="role-actions">
+                                <button class="btn-secondary" @click="editRole(role)" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-danger" @click="deleteRole(role)" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un utilisateur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="addUser">
+                        <div class="mb-3">
+                            <label class="form-label">Nom complet</label>
+                            <input type="text" class="form-control" v-model="newUser.name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" v-model="newUser.email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Rôle</label>
+                            <select class="form-control" v-model="newUser.role" required>
+                                <option value="">Sélectionner un rôle</option>
+                                <option v-for="role in roles" :value="role.name" :key="role.id">
+                                    {{ role.name }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe</label>
+                            <input type="password" class="form-control" v-model="newUser.password" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Ajouter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Role Modal -->
+    <div class="modal fade" id="addRoleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un rôle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="addRole">
+                        <div class="mb-3">
+                            <label class="form-label">Nom du rôle</label>
+                            <input type="text" class="form-control" v-model="newRole.name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Permissions</label>
+                            <div class="permissions-checkboxes">
+                                <div v-for="permission in availablePermissions" :key="permission">
+                                    <input type="checkbox" v-model="newRole.permissions" :value="permission">
+                                    <label>{{ permission }}</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Ajouter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script type="module" src="../assets/js/security.js"></script>
+</body>
+</html>
