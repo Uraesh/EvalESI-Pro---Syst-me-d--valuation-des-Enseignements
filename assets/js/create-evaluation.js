@@ -20,8 +20,17 @@ document.addEventListener('alpine:init', () => {
             responseRate: 0
         },
 
+        // Vérification d'authentification
+        async checkAuth() {
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            if (error || !session) {
+                window.location.href = '/index.html';
+            }
+        },
+
         // Initialisation
         async init() {
+            await this.checkAuth();
             await Promise.all([
                 this.loadTeachers(),
                 this.loadClasses(),
@@ -115,25 +124,14 @@ document.addEventListener('alpine:init', () => {
             const subject = document.getElementById('subject').value;
             const level = document.getElementById('level').value;
             const className = document.getElementById('className').value;
-
+          
             if (!teacher || !subject || !level || !className) {
-                Swal.fire({
-                    title: 'Champs manquants',
-                    text: 'Veuillez remplir tous les champs du formulaire avant de prévisualiser',
-                    icon: 'warning',
-                    confirmButtonText: 'OK'
-                });
+                Swal.fire({ /* ton alerte ici */ });
                 return;
             }
-
-            const params = new URLSearchParams({
-                teacher: teacher,
-                subject: subject,
-                level: level,
-                class: className
-            });
-
-            window.open(`evaluation-form.html?${params.toString()}`, '_blank');
+          
+            const params = new URLSearchParams({ teacher, subject, level, class: className });
+            window.open(`evaluation-form.html`);
         },
 
         // Méthodes utilitaires
@@ -225,16 +223,5 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 
-// Initialisation des écouteurs d'événements au chargement de la page
-document.addEventListener('DOMContentLoaded', () => {
-    const previewBtn = document.getElementById('previewBtn');
-    if (previewBtn) {
-        previewBtn.addEventListener('click', () => {
-            const createEvaluation = Alpine.data('createEvaluation');
-            if (createEvaluation) {
-                createEvaluation.previewEvaluation();
-            }
-        });
-    }
-}); 
+
 

@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkAuth() {
             // Vérification de l'authentification de l'utilisateur
             if (!localStorage.getItem('token')) {
-                window.location.href = '/login.html';
+                window.location.href = '/index.html';
             }
         },
 

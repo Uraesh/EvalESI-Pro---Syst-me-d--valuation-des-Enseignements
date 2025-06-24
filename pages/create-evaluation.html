@@ -29,7 +29,7 @@
     <!-- =============================================================================
          STRUCTURE PRINCIPALE - Layout de la création d'évaluation
          ============================================================================= -->
-    <div class="dashboard-wrapper" x-data="createEvaluation">
+    <div x-data="createEvaluation()" class="container-fluid">
         <!-- Sidebar Navigation -->
         <aside class="sidebar" :class="{ 'collapsed': isSidebarCollapsed }">
             <div class="sidebar-header">
@@ -288,9 +288,12 @@
     </div>
 
     <!-- Bouton Flottant pour Prévisualiser le Formulaire -->
-    <button class="floating-btn" id="previewBtn" title="Prévisualiser le formulaire d'évaluation">
+    <button class="floating-btn" id="previewBtn" @click="previewEvaluation" title="Prévisualiser le formulaire d'évaluation">
         <i class="fas fa-eye"></i>
     </button>
+    
+    <!-- Zone de prévisualisation dans create-evaluation.html -->
+    <div id="formContainer" class="my-4"></div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>

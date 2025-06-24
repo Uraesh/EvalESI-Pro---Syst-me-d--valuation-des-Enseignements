@@ -129,17 +129,41 @@ function evaluationForm() {
             }, 0);
         },
 
+        // Nettoyage des sessions d'évaluation temporaire
+        async cleanupPreviewSessions() {
+            await getSupabaseClient()
+                .from('sessions_evaluation')
+                .delete()
+                .eq('is_preview', true)
+                .lt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+        },
+
         // Les liens publics (lien_public dans sessions_evaluation) sont accessibles à tous. Ajoute une vérification côté client pour s'assurer que la session est ouverte :
         async loadEvaluationData() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             try {
-                const session = await supabaseClient.getSessionByToken(token);
-                this.teacherName = session.enseignements.enseignants.nom + ' ' + session.enseignements.enseignants.prenom;
-                this.subjectName = session.enseignements.matieres.libelle;
-                this.className = session.enseignements.classes.nom;
+                if (isDevMode) {
+                    const session = window.mockData?.data?.sessions?.find(s => s.token === token);
+                    if (!session) throw new Error('Session introuvable');
+                    this.teacherName = `${session.enseignements.enseignants.nom} ${session.enseignements.enseignants.prenom}`;
+                    this.subjectName = session.enseignements.matieres.libelle;
+                    this.className = session.enseignements.classes.nom;
+                    this.semester = session.enseignements.semestre || 'Non spécifié';
+                } else {
+                    const session = await supabaseClient.getSessionByToken(token);
+                    this.teacherName = `${session.enseignements.enseignants.nom} ${session.enseignements.enseignants.prenom}`;
+                    this.subjectName = session.enseignements.matieres.libelle;
+                    this.className = session.enseignements.classes.nom;
+                    this.semester = session.enseignements.semestre || 'Non spécifié';
+                }
             } catch (error) {
-                alert('Session invalide ou fermée');
+                swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: 'Session invalide ou fermée',
+                    confirmButtonColor: '#0066cc'
+                });
                 window.location.href = '/';
             }
         },
@@ -245,6 +269,21 @@ function evaluationForm() {
                 console.error('Erreur lors de la soumission:', error);
                 alert('Une erreur est survenue lors de la soumission. Veuillez réessayer.');
             }
+        },
+
+        async previewEvaluation() {
+            const errors = [];
+            if (!this.selectedTeacher) errors.push('Enseignant requis');
+            if (!this.selectedSubject) errors.push('Matière requise');
+            if (!this.selectedClass) errors.push('Classe requise');
+            if (!this.selectedAcademicYear) errors.push('Année académique requise');
+            if (!this.selectedSemestre) errors.push('Semestre requis');
+            if (!this.title) errors.push('Titre requis');
+            if (errors.length) {
+                this.showError(errors.join(', '));
+                return;
+            }
+            // Reste du code...
         }
     };
 }

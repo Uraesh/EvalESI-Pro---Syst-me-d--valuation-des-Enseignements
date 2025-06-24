@@ -362,9 +362,10 @@ class SupabaseClient {
     /**
      * Créer une nouvelle session d'évaluation
      */
+     
     async createSessionEvaluation(sessionData) {
         try {
-            // D'abord créer l'enseignement si nécessaire
+            // Créer l'enseignement si nécessaire
             const enseignement = await this.createOrGetEnseignement({
                 enseignant_id: sessionData.enseignant_id,
                 classe_id: sessionData.classe_id,
@@ -372,7 +373,7 @@ class SupabaseClient {
                 annee_academique_id: sessionData.annee_academique_id,
                 semestre: sessionData.semestre
             });
-
+    
             // Générer un token unique
             const token = this.generateSecureToken();
             
@@ -380,38 +381,35 @@ class SupabaseClient {
             const dateOuverture = new Date();
             const dateFermeture = new Date();
             dateFermeture.setDate(dateFermeture.getDate() + (sessionData.duree_jours || 7));
-
+    
             const { data, error } = await this.supabase
                 .from('sessions_evaluation')
                 .insert([{
                     enseignement_id: enseignement.id,
                     titre: sessionData.titre,
-                    description: sessionData.description,
+                    description: sessionData.description || 'Évaluation temporaire',
                     token: token,
                     date_ouverture: dateOuverture.toISOString(),
                     date_fermeture: dateFermeture.toISOString(),
                     created_by_id: (await this.getCurrentUser())?.id,
-                    lien_public: `${window.location.origin}/pages/evaluation-form.html?token=${token}`
+                    lien_public: `${window.location.origin}/pages/evaluation-form.html?token=${token}`,
+                    is_preview: sessionData.is_preview || false
                 }])
                 .select(`
                     *,
                     enseignements (
                         *,
-                        enseignants (
-                            *,
-                            enseignants (nom, prenom),
-                            classes (nom),
-                            matieres (libelle)
-                        )
+                        enseignants (nom, prenom),
+                        classes (nom),
+                        matieres (libelle)
                     )
                 `)
                 .single();
-
+    
             if (error) throw error;
-
+    
             console.log('✅ Session d\'évaluation créée:', data);
             return data;
-
         } catch (error) {
             console.error('❌ Erreur création session:', error);
             throw error;
