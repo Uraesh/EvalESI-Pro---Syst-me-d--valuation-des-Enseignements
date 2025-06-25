@@ -31,10 +31,19 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendre async pour
         // Données utilisateurs et rôles
         users: [],
         availableRoles: [], // Pour la liste déroulante des rôles
+        availablePermissions: [ // Liste statique des permissions disponibles
+            'manage_users', 'view_users',
+            'manage_roles', 'view_roles',
+            'manage_settings',
+            'manage_evaluations', 'view_evaluations',
+            'view_reports',
+            'manage_teachers', 'view_teachers',
+            'manage_sessions', 'view_sessions'
+        ],
         selectedUser: null,
         selectedRole: null,
-        newUser: { name: '', email: '', role_id: null, password: '' }, // Initialiser comme objet
-        newRole: { name: '', level: '', permissions: [] }, // Initialiser comme objet
+        newUser: { name: '', email: '', role_id: null, password: '' },
+        newRole: { name: '', level: 'user', permissions: [] }, // Valeur par défaut pour level, et permissions initialisé
         
         // Configuration système
         systemConfig: {
@@ -315,22 +324,40 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendre async pour
         },
 
         showAddRoleModal() {
-            // Affichage du modal d'ajout de rôle
-            const modal = new bootstrap.Modal(document.getElementById('addRoleModal'));
-            modal.show();
-            this.newRole = { name: '', permissions: [] };
+            this.newRole = { name: '', level: 'user', permissions: [] }; // Réinitialisation complète
+            const modalElement = document.getElementById('addRoleModal');
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modal.show();
+            } else {
+                console.error("Modal 'addRoleModal' non trouvé.");
+            }
         },
 
         async submitNewRole() {
-            // Soumission du formulaire d'ajout de rôle
+            const supabase = getSupabaseClient(); // Utiliser getSupabaseClient
+            if (!supabase) {
+                this.showError("Client Supabase non disponible.");
+                return;
+            }
+            if (!this.newRole.name || !this.newRole.level) {
+                this.showError("Le nom du rôle et le niveau sont requis.");
+                return;
+            }
+            this.isLoading = true;
             try {
-                const { error } = await supabaseClient
+                const { data, error } = await supabase // Utiliser supabase instance
                     .from('roles')
-                    .insert([this.newRole]);
+                    .insert([{
+                        name: this.newRole.name,
+                        level: this.newRole.level,
+                        permissions: this.newRole.permissions
+                    }])
+                    .select();
                 
                 if (error) throw error;
                 
-                await this.loadRoles();
+                await this.loadRoles(supabase); // Passer supabase
                 this.showSuccess('Rôle ajouté avec succès');
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addRoleModal'));
                 modal.hide();
@@ -346,31 +373,41 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendre async pour
             modal.show();
         },
 
-        async deleteRole(role) {
-            // Suppression d'un rôle avec confirmation
+        async deleteRole(role) { // Renommer en confirmDeleteRole pour la cohérence
+            const supabase = getSupabaseClient(); // Utiliser getSupabaseClient
+            if (!supabase) {
+                this.showError("Client Supabase non disponible.");
+                return;
+            }
             try {
                 const { isConfirmed } = await Swal.fire({
                     title: 'Confirmer la suppression',
                     text: `Voulez-vous vraiment supprimer le rôle ${role.name} ?`,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#0066cc',
-                    cancelButtonColor: '#cc0000'
+                    confirmButtonColor: '#d33', // Rouge pour suppression
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Oui, supprimer !',
+                    cancelButtonText: 'Annuler'
                 });
 
                 if (isConfirmed) {
-                    const { error } = await supabaseClient
+                    this.isLoading = true; // Gérer isLoading
+                    const { error } = await supabase // Utiliser supabase instance
                         .from('roles')
                         .delete()
                         .eq('id', role.id);
 
                     if (error) throw error;
 
-                    await this.loadRoles();
+                    await this.loadRoles(supabase); // Passer supabase
                     this.showSuccess('Rôle supprimé avec succès');
                 }
             } catch (error) {
-                this.showError('Erreur lors de la suppression du rôle');
+                console.error("Erreur lors de la suppression du rôle:", error); // Log plus détaillé
+                this.showError(`Erreur lors de la suppression du rôle: ${error.message}`);
+            } finally {
+                this.isLoading = false; // Gérer isLoading
             }
         },
 

@@ -445,7 +445,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form @submit.prevent="addRole">
+                    <form id="addRoleForm" @submit.prevent="submitNewRole">
                         <div class="mb-3">
                             <label class="form-label">Nom du rôle</label>
                             <input type="text" class="form-control" x-model="newRole.name" required>
@@ -474,7 +474,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" @click="submitNewRole">Ajouter</button>
+                    <button type="submit" form="addRoleForm" class="btn btn-primary">Ajouter</button>
                 </div>
             </div>
         </div>
