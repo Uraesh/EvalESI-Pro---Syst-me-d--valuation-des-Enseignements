@@ -37,7 +37,7 @@
 </head>
 
 <body>
-    <div class="dashboard-wrapper" x-data="parametres">
+    <div class="dashboard-wrapper" x-data="$store.parametres">
         <!-- Sidebar Navigation -->
         <aside class="sidebar" :class="{ 'collapsed': isSidebarCollapsed }">
             <div class="sidebar-header">
@@ -403,10 +403,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form @submit.prevent="addUser">
+                    <form id="addUserForm Alpine" @submit.prevent="submitNewUser">
                         <div class="mb-3">
-                            <label class="form-label">Nom</label>
-                            <input type="text" class="form-control" x-model="newUser.name" required>
+                            <label class="form-label">Nom Complet</label>
+                            <input type="text" class="form-control" x-model="newUser.name" required placeholder="Jean Dupont">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Email</label>
@@ -414,9 +414,10 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Rôle</label>
-                            <select class="form-select" x-model="newUser.role" required>
-                                <template x-for="role in roles" :key="role.id">
-                                    <option :value="role.name" x-text="role.name"></option>
+                            <select class="form-select" x-model="newUser.role_id" required>
+                                <option value="">Sélectionner un rôle</option>
+                                <template x-for="role in availableRoles" :key="role.id">
+                                    <option :value="role.id" x-text="role.name"></option>
                                 </template>
                             </select>
                         </div>
@@ -428,7 +429,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" @click="submitNewUser">Ajouter</button>
+                    <button type="submit" form="addUserForm Alpine" class="btn btn-primary">Ajouter</button>
+                    <!-- type="submit" pour déclencher @submit.prevent du formulaire -->
                 </div>
             </div>
         </div>
