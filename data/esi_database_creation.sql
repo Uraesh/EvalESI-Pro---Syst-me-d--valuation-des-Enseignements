@@ -255,7 +255,7 @@ CREATE TABLE sessions_evaluation (
     lien_public VARCHAR(500),
     date_ouverture TIMESTAMPTZ NOT NULL,
     date_fermeture TIMESTAMPTZ NOT NULL,
-    created_by_id INTEGER REFERENCES auth_users(id) ON DELETE SET NULL,
+    created_by_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- MODIFIED: Changed to UUID and references auth.users
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -391,7 +391,7 @@ CREATE TABLE historique_prix (
     score_obtenu NUMERIC(5,2) NOT NULL,
     nb_evaluations INTEGER NOT NULL,
     date_attribution TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    attribue_par_id INTEGER REFERENCES auth_users(id) ON DELETE SET NULL,
+    attribue_par_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- MODIFIED: Changed to UUID and references auth.users
     commentaire_jury TEXT,
     
     -- Contraintes
@@ -411,7 +411,7 @@ CREATE INDEX idx_historique_prix_date ON historique_prix(date_attribution);
 
 CREATE TABLE audit_logs (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES auth_users(id) ON DELETE SET NULL,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- MODIFIED: Changed to UUID and references auth.users
     action action_audit_enum NOT NULL,
     entity_type VARCHAR(50),
     entity_id INTEGER,
@@ -743,3 +743,26 @@ CREATE POLICY admin_access ON sessions_evaluation
     USING (EXISTS (
         SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE
     ));
+
+-- =============================================================================
+-- PLACEHOLDER FUNCTION FOR calculate_teacher_statistics
+-- This function needs to be properly implemented with the correct business logic.
+-- =============================================================================
+CREATE OR REPLACE FUNCTION calculate_teacher_statistics(
+    p_enseignant_id INTEGER,
+    p_annee_academique_id INTEGER
+)
+RETURNS JSONB -- Or appropriate return type
+AS $$
+BEGIN
+    -- Placeholder implementation:
+    -- Replace this with actual logic to calculate and return statistics.
+    -- For now, it returns a simple JSON object indicating it's a placeholder.
+    RETURN jsonb_build_object(
+        'message', 'calculate_teacher_statistics placeholder - needs implementation',
+        'enseignant_id', p_enseignant_id,
+        'annee_academique_id', p_annee_academique_id,
+        'data', '{}'::jsonb
+    );
+END;
+$$ LANGUAGE plpgsql;

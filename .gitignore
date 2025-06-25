@@ -40,15 +40,12 @@ coverage/
 # Supabase
 .supabase/
 
-# Configuration Supabase
-SUPABASE_URL=https://goyxxilqkouwtznfvuok.supabase.co
-SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdveXh4aWxxa291d3R6bmZ2dW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk5MjQ5NzAsImV4cCI6MjA1NTUwMDk3MH0.2QYwXZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQ
-
-# Configuration de l'application
-NODE_ENV=development
-PORT=3000
-
-# Configuration de sécurité
-JWT_SECRET=EPy-0PJJz_w98ql8BibHjmdF46EqKSuiVlEuJMZFblCtIuWjSrfGQaqmEVVbzAzT
-COOKIE_SECRET=1jRdjGun_HBhsPZo8Iu5t_wDVTf6z72N
-
+# It is recommended to use a .env.example file to list necessary environment variables
+# instead of commenting them out in .gitignore.
+# Example:
+# SUPABASE_URL=your_supabase_url_here
+# SUPABASE_KEY=your_supabase_anon_key_here
+# NODE_ENV=development
+# PORT=3000
+# JWT_SECRET=your_jwt_secret_here
+# COOKIE_SECRET=your_cookie_secret_here

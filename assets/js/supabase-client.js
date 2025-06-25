@@ -15,7 +15,13 @@ import Plotly from 'plotly.js'
  
 
 // Mode développement
-const isDevMode = import.meta.env.MODE === 'development';
+// const isDevMode = import.meta.env.MODE === 'development';
+// CI-DESSUS COMMENTÉ: import.meta.env.MODE n'est pas disponible sans outil de build comme Vite.
+// Si le mode développement est nécessaire, il faudra le gérer autrement (ex: variable globale, config serveur)
+const isDevMode = (window.APP_CONFIG && window.APP_CONFIG.MODE === 'development') || false;
+if(isDevMode){
+    console.warn("Mode développement activé pour SupabaseClient. Les données fictives peuvent être utilisées.");
+}
 
 // Initialisation d'Alpine.js
 window.Alpine = Alpine
@@ -26,10 +32,38 @@ window.Plotly = Plotly
 
 class SupabaseClient {
     constructor() {
-        // Initialisation du client Supabase avec URL et clé anonyme
-         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-         const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
-         this.supabase = createClient(supabaseUrl, supabaseKey);
+        // =================================================================================
+        // !! IMPORTANT CONFIGURATION MANUELLE REQUISE !!
+        // =================================================================================
+        // Les variables VITE_SUPABASE_URL et VITE_SUPABASE_KEY ne sont pas automatiquement
+        // injectées car Vite n'est pas configuré dans ce projet.
+        // Vous DEVEZ fournir ces valeurs manuellement pour que le client Supabase fonctionne.
+        //
+        // OPTION 1: Définir globalement (par exemple, dans un <script> en haut de votre HTML)
+        //    window.APP_CONFIG = {
+        //        SUPABASE_URL: "VOTRE_URL_SUPABASE",
+        //        SUPABASE_KEY: "VOTRE_CLE_ANON_SUPABASE"
+        //    };
+        //
+        // OPTION 2: Remplacer directement les placeholders ci-dessous (moins flexible)
+        //
+        // Pour une solution de production robuste, il est FORTEMENT RECOMMANDÉ d'intégrer
+        // un outil de build (comme Vite, Webpack, Rollup) pour gérer les variables d'environnement.
+        // =================================================================================
+
+        const supabaseUrl = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL) || "YOUR_SUPABASE_URL_PLACEHOLDER";
+        const supabaseKey = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_KEY) || "YOUR_SUPABASE_KEY_PLACEHOLDER";
+
+        if (supabaseUrl === "YOUR_SUPABASE_URL_PLACEHOLDER" || supabaseKey === "YOUR_SUPABASE_KEY_PLACEHOLDER") {
+            console.error("***********************************************************************************");
+            console.error("ERREUR CRITIQUE: URL ou Clé Supabase non configurée pour le client.");
+            console.error("Veuillez définir window.APP_CONFIG.SUPABASE_URL et window.APP_CONFIG.SUPABASE_KEY,");
+            console.error("ou remplacer les placeholders dans supabase-client.js.");
+            console.error("Le client Supabase ne pourra pas s'initialiser correctement.");
+            console.error("***********************************************************************************");
+        }
+
+        this.supabase = createClient(supabaseUrl, supabaseKey);
 
         // Cache local pour optimiser les performances
         this.cache = new Map();
