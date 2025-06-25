@@ -2,7 +2,7 @@
 // TEACHERS.JS - Gestion des enseignants
 // =============================================================================
 
-import { supabaseClient } from './supabase-client.js'; 
+import { getSupabaseClient, initSupabaseClient } from './supabase-client.js';
 import Swal from 'sweetalert2';
 
 // Configuration Alpine.js
@@ -11,12 +11,24 @@ document.addEventListener('alpine:init', () => {
         // =========================================================================
         // ÉTAT DE L'APPLICATION
         // =========================================================================
-        isLoading: false,
+        isLoading: true,
         isSidebarCollapsed: false,
-        teachers: [],
+        teachers: [], // Correspond à `x-for="teacher in teachers"` dans l'HTML
+        error: null,
         stats: {
             totalTeachers: 0,
             activeTeachers: 0
+        },
+
+        // Champs pour le formulaire d'ajout
+        newTeacher: {
+            nom: '',
+            prenom: '',
+            email: '',
+            telephone: '',
+            specialite: '',
+            date_embauche: '',
+            is_active: true // Par défaut un nouvel enseignant est actif
         },
 
         // =========================================================================
@@ -27,14 +39,17 @@ document.addEventListener('alpine:init', () => {
          * Initialise l'application
          */
         async init() {
+            this.isLoading = true;
+            this.error = null;
             try {
-                this.isLoading = true;
+                await initSupabaseClient(); // S'assurer que le client est initialisé
                 await this.checkAuth();
                 await this.loadTeachers();
                 this.setupEventListeners();
             } catch (error) {
                 console.error('Erreur d\'initialisation:', error);
-                this.showError('Erreur lors du chargement des données');
+                this.error = 'Erreur lors du chargement initial des données. Veuillez vérifier la console.';
+                this.showError(this.error);
             } finally {
                 this.isLoading = false;
             }
@@ -44,9 +59,14 @@ document.addEventListener('alpine:init', () => {
          * Vérifie l'authentification
          */
         async checkAuth() {
-            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            const supabase = getSupabaseClient();
+            if (!supabase) {
+                this.error = "Client Supabase non initialisé.";
+                throw new Error(this.error);
+            }
+            const { data: { session }, error } = await supabase.auth.getSession();
             if (error || !session) {
-                window.location.href = '/index.html';
+                window.location.href = '/index.html'; // Rediriger vers la page de connexion
             }
         },
 
@@ -54,18 +74,38 @@ document.addEventListener('alpine:init', () => {
          * Charge la liste des enseignants
          */
         async loadTeachers() {
+            this.isLoading = true;
+            this.error = null;
+            const supabase = getSupabaseClient();
+            if (!supabase) {
+                 this.error = "Client Supabase non initialisé lors du chargement des enseignants.";
+                 this.isLoading = false;
+                 return;
+            }
+
             try {
-                const { data, error } = isDevMode
-                    ? { data: window.mockData.data.enseignants, error: null }
-                    : await supabaseClient
-                        .from('enseignants')
-                        .select('*')
-                        .order('nom', { ascending: true });
-                if (error) throw error;
-                this.teachers = data;
-                this.updateStats();
-            } catch (error) {
-                this.showError('Erreur lors du chargement des enseignants');
+                // Utilisation de la fonction getEnseignants() du client Supabase
+                // qui gère déjà le mode dev et le cache.
+                const data = await supabase.getEnseignants(); // La fonction getEnseignants retourne directement les données ou lève une erreur
+
+                if (data) {
+                     // Mapper les données pour correspondre à la structure attendue par le HTML
+                    this.teachers = data.map(teacher => ({
+                        ...teacher,
+                        status: teacher.is_active ? 'active' : 'inactive', // Mapper is_active en status
+                        evaluations: teacher.nombre_evaluations_recues || 0 // Utiliser nombre_evaluations_recues si disponible
+                    }));
+                    this.updateStats();
+                } else {
+                    this.teachers = [];
+                }
+            } catch (err) {
+                console.error('Erreur lors du chargement des enseignants:', err);
+                this.error = `Erreur chargement enseignants: ${err.message}`;
+                this.showError(this.error);
+                this.teachers = [];
+            } finally {
+                this.isLoading = false;
             }
         },
 
@@ -85,130 +125,126 @@ document.addEventListener('alpine:init', () => {
          * Affiche le modal d'ajout d'enseignant
          */
         showAddTeacherModal() {
-            const modal = new bootstrap.Modal(document.getElementById('addTeacherModal'));
-            modal.show();
+            // Réinitialiser le formulaire d'ajout
+            this.newTeacher = {
+                nom: '',
+                prenom: '',
+                email: '',
+                telephone: '',
+                specialite: '',
+                date_embauche: '',
+                is_active: true
+            };
+            const modalElement = document.getElementById('addTeacherModal');
+            if (modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            } else {
+                console.error("Modal 'addTeacherModal' non trouvé.");
+            }
         },
 
         /**
          * Soumet le formulaire d'ajout d'enseignant
          */
         async submitAddTeacher() {
-            try {
-                const form = document.getElementById('addTeacherForm');
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
+            const supabase = getSupabaseClient();
+            if (!supabase) {
+                this.showError("Client Supabase non disponible.");
+                return;
+            }
 
-                const teacherData = {
-                    nom: document.getElementById('teacherName').value,
-                    prenom: document.getElementById('teacherPrenom').value,
-                    email: document.getElementById('teacherEmail').value,
-                    telephone: document.getElementById('teacherPhone').value,
-                    specialite: document.getElementById('teacherSpecialty').value,
-                    date_embauche: document.getElementById('teacherHireDate').value,
-                    status: document.getElementById('teacherStatus').value,
-                    evaluations: 0
-                };
+            // Validation simple (peut être améliorée)
+            if (!this.newTeacher.nom || !this.newTeacher.prenom || !this.newTeacher.email) {
+                this.showError("Les champs Nom, Prénom et Email sont obligatoires.");
+                return;
+            }
 
-                // Désactiver le bouton pendant l'insertion
-                const submitButton = form.querySelector('button[type="submit"]');
+            const teacherDataToInsert = { ...this.newTeacher };
+
+            // Pas besoin de `evaluations: 0` ici, la DB devrait avoir une valeur par défaut ou ce n'est pas géré à l'insertion.
+            // Le champ `status` de l'HTML est `is_active` dans la DB.
+
+            const submitButton = document.querySelector('#addTeacherModal .modal-footer button.btn-primary');
+            if(submitButton) {
                 submitButton.disabled = true;
                 submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> En cours...';
-
-                const { data, error } = await supabaseClient
-                    .from('enseignants')
-                    .insert([teacherData])
-                    .select('*'); // Pour récupérer l'enseignant inséré
-
-                if (error) throw error;
-
-                // Ajouter l'enseignant au tableau existant
-                this.teachers.unshift(data[0]);
-                this.updateStats();
-
-                // Fermer le modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addTeacherModal'));
-                modal.hide();
-
-                // Réinitialiser le formulaire
-                form.reset();
-
-                // Réactiver le bouton
-                submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="fas fa-plus"></i> Ajouter';
-
-                this.showSuccess('Enseignant ajouté avec succès');
-            } catch (error) {
-                console.error('Erreur d\'ajout:', error);
-                this.showError('Erreur lors de l\'ajout de l\'enseignant');
             }
-        },
 
-        // Ajouter une méthode pour charger un enseignant spécifique
-        async loadTeacher(id) {
             try {
-                const { data, error } = await supabaseClient
-                    .from('enseignants')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
+                // Utilisation de la fonction createEnseignant du client Supabase
+                const insertedTeacher = await supabase.createEnseignant(teacherDataToInsert);
 
-                if (error) throw error;
-                return data;
+                if (insertedTeacher) {
+                    await this.loadTeachers(); // Recharger la liste pour inclure le nouvel enseignant et mettre à jour les stats
+                    this.showSuccess('Enseignant ajouté avec succès');
+
+                    const modalElement = document.getElementById('addTeacherModal');
+                     if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) modal.hide();
+                    }
+                }
             } catch (error) {
-                console.error('Erreur lors du chargement:', error);
-                throw error;
-            }
-        },
-
-        // Ajouter une méthode pour mettre à jour un enseignant
-        async updateTeacher(teacherId, updates) {
-            try {
-                const { error } = await supabaseClient
-                    .from('enseignants')
-                    .update(updates)
-                    .eq('id', teacherId);
-
-                if (error) throw error;
-                return true;
-            } catch (error) {
-                console.error('Erreur lors de la mise à jour:', error);
-                throw error;
+                console.error('Erreur d\'ajout d\'enseignant:', error);
+                this.showError(`Erreur lors de l'ajout de l'enseignant: ${error.message}`);
+            } finally {
+                 if(submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = 'Ajouter';
+                }
             }
         },
 
         /**
-         * Modifie un enseignant
+         * Modifie un enseignant (placeholder - implémentation future)
          */
         async editTeacher(teacher) {
-            try {
-                // Implémentation de la modification
-                console.log('Modifier enseignant:', teacher);
-            } catch (error) {
-                console.error('Erreur de modification:', error);
-                this.showError('Erreur lors de la modification');
-            }
+            // TODO: Implémenter la logique d'édition, probablement avec une autre modal
+            console.log('Modifier enseignant (TODO):', teacher);
+            Swal.fire('Fonctionnalité à venir', `L'édition de l'enseignant ${teacher.nom} ${teacher.prenom} sera bientôt disponible.`, 'info');
         },
 
         /**
          * Supprime un enseignant
          */
-        async deleteTeacher(teacher) {
-            try {
-                const { error } = await supabaseClient
-                    .from('enseignants')
-                    .delete()
-                    .eq('id', teacher.id);
-
-                if (error) throw error;
-
-                await this.loadTeachers();
-                this.showSuccess('Enseignant supprimé avec succès');
-            } catch (error) {
-                console.error('Erreur de suppression:', error);
-                this.showError('Erreur lors de la suppression');
+        async deleteTeacher(teacherToDelete) {
+            const supabase = getSupabaseClient();
+            if (!supabase) {
+                this.showError("Client Supabase non disponible.");
+                return;
             }
+
+            Swal.fire({
+                title: 'Êtes-vous sûr ?',
+                text: `Voulez-vous vraiment supprimer l'enseignant ${teacherToDelete.nom} ${teacherToDelete.prenom} ? Cette action est irréversible.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Oui, supprimer !',
+                cancelButtonText: 'Annuler'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    this.isLoading = true;
+                    try {
+                        const { error } = await supabase
+                            .from('enseignants')
+                            .delete()
+                            .eq('id', teacherToDelete.id);
+
+                        if (error) throw error;
+
+                        await this.loadTeachers(); // Recharger la liste
+                        this.showSuccess('Enseignant supprimé avec succès');
+                    } catch (error) {
+                        console.error('Erreur de suppression:', error);
+                        this.showError(`Erreur lors de la suppression: ${error.message}`);
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
+            });
         },
 
         // =========================================================================
@@ -219,7 +255,8 @@ document.addEventListener('alpine:init', () => {
          * Configure les écouteurs d'événements
          */
         setupEventListeners() {
-            // Écouteurs spécifiques à la page des enseignants
+            // Aucun écouteur d'événement global spécifique nécessaire pour l'instant
+            // Les clics sont gérés par Alpine via @click dans l'HTML
         },
 
         // =========================================================================
@@ -227,37 +264,31 @@ document.addEventListener('alpine:init', () => {
         // =========================================================================
 
         /**
-         * Affiche une erreur
+         * Affiche une erreur normalisée via Swal et console
          */
         showError(message) {
+            console.error("teachers.js Error:", message);
             Swal.fire({
                 icon: 'error',
                 title: 'Erreur',
                 text: message,
                 confirmButtonColor: '#0066cc'
             });
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'alert alert-danger';
-            errorDiv.textContent = message;
-            document.querySelector('.container').prepend(errorDiv);
-            setTimeout(() => errorDiv.remove(), 5000); // Supprime après 5 secondes
+            // Retrait de l'ajout de div d'erreur manuel pour standardiser sur Swal.
         },
 
         /**
-         * Affiche un succès
+         * Affiche un succès normalisé via Swal
          */
         showSuccess(message) {
             Swal.fire({
                 icon: 'success',
                 title: 'Succès',
                 text: message,
-                confirmButtonColor: '#0066cc'
+                confirmButtonColor: '#0066cc',
+                timer: 2000, // Fermer automatiquement après 2 secondes
+                timerProgressBar: true
             });
-            const successDiv = document.createElement('div');
-            successDiv.className = 'alert alert-success';
-            successDiv.textContent = message;
-            document.querySelector('.container').prepend(successDiv);
-            setTimeout(() => successDiv.remove(), 5000);
         }
     }));
-}); 
+});

@@ -175,13 +175,21 @@
                 <div class="teachers-grid">
                     <div class="teachers-header">
                         <h3>Liste des Enseignants</h3>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTeacherModal">
+                        <button class="btn btn-primary" @click="openAddTeacherModal()">
                             <i class="fas fa-plus"></i> Ajouter un enseignant
                         </button>
                     </div>
                     <br>
 
-                    <div class="teachers-table">
+                    <!-- Message d'erreur -->
+                    <div x-show="error" class="alert alert-danger" x-text="error"></div>
+
+                    <!-- Message si liste vide -->
+                    <div x-show="!isLoading && !error && teachers.length === 0" class="alert alert-info">
+                        Aucun enseignant à afficher pour le moment.
+                    </div>
+
+                    <div class="teachers-table" x-show="!isLoading && !error && teachers.length > 0">
                         <table class="table">
                             <thead>
                                 <tr>
@@ -192,7 +200,7 @@
                                     <th>Email</th>
                                     <th>Date d'embauche</th>
                                     <th>Statut</th>
-                                    <th>Évaluations</th>
+                                    <th>Évaluations Reçues</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -201,10 +209,10 @@
                                     <tr>
                                         <td x-text="teacher.nom"></td>
                                         <td x-text="teacher.prenom"></td>
-                                        <td x-text="teacher.specialite"></td>
-                                        <td x-text="teacher.telephone"></td>
+                                        <td x-text="teacher.specialite || 'N/A'"></td>
+                                        <td x-text="teacher.telephone || 'N/A'"></td>
                                         <td x-text="teacher.email"></td>
-                                        <td x-text="teacher.date_embauche"></td>
+                                        <td x-text="new Date(teacher.date_embauche).toLocaleDateString()"></td>
                                         <td>
                                             <span class="badge" :class="teacher.status === 'active' ? 'bg-success' : 'bg-warning'"
                                                   x-text="teacher.status === 'active' ? 'Actif' : 'Inactif'">
@@ -212,13 +220,19 @@
                                         </td>
                                         <td x-text="teacher.evaluations"></td>
                                         <td>
-                                            <button class="btn btn-sm btn-info" @click="editTeacher(teacher)">
+                                            <button class="btn btn-sm btn-info" @click="openEditTeacherModal(teacher)">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-danger" @click="deleteTeacher(teacher)">
+                                            <button class="btn btn-sm btn-danger" @click="confirmDeleteTeacher(teacher)">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </td>
+                                    </tr>
+                                </template>
+                                <!-- Ligne si la liste est vide mais le chargement est terminé et pas d'erreur -->
+                                <template x-if="!isLoading && teachers.length === 0 && !error">
+                                    <tr>
+                                        <td colspan="9" class="text-center">Aucun enseignant trouvé.</td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -231,50 +245,59 @@
 
     <!-- Modal d'ajout d'enseignant -->
     <div class="modal fade" id="addTeacherModal" tabindex="-1" aria-labelledby="addTeacherModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered"> {/* Taille de modal ajustée */}
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addTeacherModalLabel">Nouvel Enseignant</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addTeacherForm">
-                        <div class="mb-3">
-                            <label for="teacherName" class="form-label">Nom</label>
-                            <input type="text" class="form-control" id="teacherName" required>
+                    <!-- Utilisation de @submit.prevent pour appeler la fonction Alpine -->
+                    <form id="addTeacherForm" @submit.prevent="submitAddTeacherForm()">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newTeacherNom" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="newTeacherNom" x-model="newTeacher.nom" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newTeacherPrenom" class="form-label">Prénom</label>
+                                <input type="text" class="form-control" id="newTeacherPrenom" x-model="newTeacher.prenom" required>
+                            </div>
                         </div>
                         <div class="mb-3">
-                            <label for="teacherPrenom" class="form-label">Prénom</label>
-                            <input type="text" class="form-control" id="teacherPrenom" required>
+                            <label for="newTeacherEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="newTeacherEmail" x-model="newTeacher.email" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="teacherEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="teacherEmail" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newTeacherPhone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="newTeacherPhone" x-model="newTeacher.telephone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newTeacherSpecialty" class="form-label">Spécialité</label>
+                                <input type="text" class="form-control" id="newTeacherSpecialty" x-model="newTeacher.specialite">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="teacherPhone" class="form-label">Téléphone</label>
-                            <input type="tel" class="form-control" id="teacherPhone" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newTeacherHireDate" class="form-label">Date d'embauche</label>
+                                <input type="date" class="form-control" id="newTeacherHireDate" x-model="newTeacher.date_embauche" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newTeacherStatus" class="form-label">Statut</label>
+                                <select class="form-select" id="newTeacherStatus" x-model="newTeacher.is_active" required>
+                                    <option :value="true">Actif</option>
+                                    <option :value="false">Inactif</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="teacherSpecialty" class="form-label">Spécialité</label>
-                            <input type="text" class="form-control" id="teacherSpecialty" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="teacherHireDate" class="form-label">Date d'embauche</label>
-                            <input type="date" class="form-control" id="teacherHireDate" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="teacherStatus" class="form-label">Statut</label>
-                            <select class="form-select" id="teacherStatus" required>
-                                <option value="active">Actif</option>
-                                <option value="inactive">Inactif</option>
-                            </select>
-                        </div>
+                         <!-- Boutons doivent être DANS le formulaire pour que @submit.prevent fonctionne, ou le type="submit" sur le bouton -->
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" @click="submitAddTeacher" data-bs-dismiss="modal">Ajouter</button>
+                    <!-- Le type="submit" va soumettre le formulaire, qui est géré par @submit.prevent -->
+                    <button type="submit" form="addTeacherForm" class="btn btn-primary">Ajouter</button>
                 </div>
             </div>
         </div>
