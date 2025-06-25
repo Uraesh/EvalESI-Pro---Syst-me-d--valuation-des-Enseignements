@@ -142,23 +142,15 @@
                     <button class="sidebar-toggle smooth-transition" @click="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h2 class="page-title">Gestion des Sessions</h2>
+                    <h2 class="page-title">Sessions</h2>
                 </div>
                 
                 <div class="navbar-right">
-                    <div class="navbar-stats">
-                        <div class="stat-item">
-                            <span class="stat-value" x-text="stats.totalSessions"></span>
-                            <span class="stat-label">Sessions</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value" x-text="stats.activeSessions"></span>
-                            <span class="stat-label">Actives</span>
-                        </div>
-                    </div>
-                    
+                    <button id="logoutBtn" class="btn btn-danger" style="margin-right: 1.5rem; font-weight: bold; background: linear-gradient(90deg, #ff3b3b 0%, #b31217 100%); border: none; border-radius: 2rem; padding: 0.5rem 1.5rem; color: #fff; box-shadow: 0 2px 8px rgba(255,59,59,0.15); transition: background 0.3s, box-shadow 0.3s;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
                     <div class="user-menu">
-                        <div class="user-avatar">
+                        <div class="user-avatar hover-scale">
                             <i class="fas fa-user"></i>
                         </div>
                     </div>
@@ -293,5 +285,26 @@
     <script src="/assets/js/mock-data.js"></script>
     <script type="module" src="../assets/js/supabase-client.js"></script>
     <script type="module" src="../assets/js/sessions.js"></script>
+    <script type="module">
+    import { supabaseClient } from '../assets/js/supabase-client.js';
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            const result = await supabaseClient.logout();
+            if (result.success) {
+                window.location.href = '../index.html';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: result.error || 'Erreur lors de la déconnexion.',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                });
+            }
+        });
+    }
+    </script>
 </body>
 </html> 

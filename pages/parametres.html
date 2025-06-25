@@ -34,7 +34,14 @@
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="../assets/css/forms.css">
     <link rel="stylesheet" href="../assets/css/animations.css">
+
+    <style>
+            .btn-descendu {
+        margin-top: 32px; /* Ajuste la valeur selon le besoin */
+    }
+    </style>
 </head>
+
 
 <body>
     <div class="dashboard-wrapper" x-data="parametres">
@@ -116,15 +123,17 @@
             <!-- Top Navigation Bar -->
             <nav class="top-navbar">
                 <div class="navbar-left">
-                    <button class="sidebar-toggle" @click="isSidebarCollapsed = !isSidebarCollapsed">
+                    <button class="sidebar-toggle smooth-transition" @click="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
                     <h2 class="page-title">Paramètres</h2>
                 </div>
-                
                 <div class="navbar-right">
+                    <button id="logoutBtn" class="btn btn-danger" style="margin-right: 1.5rem; font-weight: bold; background: linear-gradient(90deg, #ff3b3b 0%, #b31217 100%); border: none; border-radius: 2rem; padding: 0.5rem 1.5rem; color: #fff; box-shadow: 0 2px 8px rgba(255,59,59,0.15); transition: background 0.3s, box-shadow 0.3s;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
                     <div class="user-menu">
-                        <div class="user-avatar">
+                        <div class="user-avatar hover-scale">
                             <i class="fas fa-user"></i>
                         </div>
                     </div>
@@ -165,7 +174,7 @@
                         Paramètres des Évaluations
                     </button>
                     
-                    <button class="btn-primary"
+                    <button class="btn-primary  btn-descendu"
                             :class="{ 'active': activeTab === 'notifications' }"
                             @click="activeTab = 'notifications'">
                         <i class="fas fa-bell"></i>
@@ -482,5 +491,26 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script type="module" src="../assets/js/supabase-client.js"></script>
     <script type="module" src="../assets/js/parametres.js"></script>
+    <script type="module">
+    import { supabaseClient } from '../assets/js/supabase-client.js';
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            const result = await supabaseClient.logout();
+            if (result.success) {
+                window.location.href = '../index.html';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: result.error || 'Erreur lors de la déconnexion.',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                });
+            }
+        });
+    }
+    </script>
 </body>
 </html> 

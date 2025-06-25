@@ -150,7 +150,16 @@ const mockData = {
             charge_travail: Math.random() * 5,
             note_finale: Math.random() * 5
         }))
-    }
+    },
+
+    reponses_evaluation: [
+        { session_id: 1, ip_hash: 'md5(192.168.1.10)', user_agent_hash: 'md5(Mozilla/5.0 Student1)', fingerprint_hash: 'md5(fingerprint1)', completion_time: 420, commentaire: "Excellent cours, très bien expliqué!" },
+        { session_id: 1, ip_hash: 'md5(192.168.1.11)', user_agent_hash: 'md5(Mozilla/5.0 Student2)', fingerprint_hash: 'md5(fingerprint2)', completion_time: 380, commentaire: "Prof très pédagogue" },
+        { session_id: 1, ip_hash: 'md5(192.168.1.12)', user_agent_hash: 'md5(Mozilla/5.0 Student3)', fingerprint_hash: 'md5(fingerprint3)', completion_time: 450, commentaire: "Cours intéressant et bien structuré" },
+        { session_id: 1, ip_hash: 'md5(192.168.1.13)', user_agent_hash: 'md5(Mozilla/5.0 Student4)', fingerprint_hash: 'md5(fingerprint4)', completion_time: 320, commentaire: "Très bon enseignant" },
+        { session_id: 1, ip_hash: 'md5(192.168.1.14)', user_agent_hash: 'md5(Mozilla/5.0 Student5)', fingerprint_hash: 'md5(fingerprint5)', completion_time: 410, commentaire: "Explications claires, merci professeur!" },
+        { session_id: 1, ip_hash: 'md5(192.168.1.39)', user_agent_hash: 'md5(Mozilla/5.0 Student30)', fingerprint_hash: 'md5(fingerprint30)', completion_time: 340, commentaire: "Professeur exemplaire" }
+    ]
 };
 
 // Fonction pour simuler un délai réseau

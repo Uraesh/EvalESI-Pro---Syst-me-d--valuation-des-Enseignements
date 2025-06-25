@@ -138,26 +138,18 @@
             <!-- Top Navigation Bar -->
             <nav class="top-navbar">
                 <div class="navbar-left">
-                    <button class="sidebar-toggle" @click="isSidebarCollapsed = !isSidebarCollapsed">
+                    <button class="sidebar-toggle smooth-transition" @click="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h2 class="page-title">Gestion des Enseignants</h2>
+                    <h2 class="page-title">Enseignants</h2>
                 </div>
                 
                 <div class="navbar-right">
-                    <div class="navbar-stats">
-                        <div class="stat-item">
-                            <span class="stat-value" x-text="stats.totalTeachers"></span>
-                            <span class="stat-label">Enseignants</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value" x-text="stats.activeTeachers"></span>
-                            <span class="stat-label">Actifs</span>
-                        </div>
-                    </div>
-                    
+                    <button id="logoutBtn" class="btn btn-danger" style="margin-right: 1.5rem; font-weight: bold; background: linear-gradient(90deg, #ff3b3b 0%, #b31217 100%); border: none; border-radius: 2rem; padding: 0.5rem 1.5rem; color: #fff; box-shadow: 0 2px 8px rgba(255,59,59,0.15); transition: background 0.3s, box-shadow 0.3s;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
                     <div class="user-menu">
-                        <div class="user-avatar">
+                        <div class="user-avatar hover-scale">
                             <i class="fas fa-user"></i>
                         </div>
                     </div>
@@ -225,6 +217,8 @@
                         </table>
                     </div>
                 </div>
+
+                <div id="mock-enseignants-list"></div>
             </div>
         </main>
     </div>
@@ -296,5 +290,44 @@
     <script src="/assets/js/mock-data.js"></script>
     <script type="module" src="../assets/js/supabase-client.js"></script>
     <script type="module" src="../assets/js/teachers.js"></script>
+    <script type="module">
+    import { supabaseClient } from '../assets/js/supabase-client.js';
+    import { mockData } from '../assets/js/mock-data.js';
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            const result = await supabaseClient.logout();
+            if (result.success) {
+                window.location.href = '../index.html';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: result.error || 'Erreur lors de la déconnexion.',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                });
+            }
+        });
+    }
+
+    const container = document.getElementById('mock-enseignants-list');
+    if (container) {
+        let html = '<table class="table table-bordered table-hover"><thead><tr><th>Nom</th><th>Prénom</th><th>Spécialité</th><th>Téléphone</th><th>Email</th><th>Date d\'embauche</th></tr></thead><tbody>';
+        mockData.enseignants.forEach(e =>
+            html += `<tr>
+                <td>${e.nom}</td>
+                <td>${e.prenom}</td>
+                <td>${e.specialite}</td>
+                <td>${e.telephone}</td>
+                <td>${e.email}</td>
+                <td>${e.date_embauche}</td>
+            </tr>`
+        );
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+    </script>
 </body>
 </html> 

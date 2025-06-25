@@ -117,15 +117,18 @@
             <!-- Top Navigation Bar -->
             <nav class="top-navbar">
                 <div class="navbar-left">
-                    <button class="sidebar-toggle" @click="isSidebarCollapsed = !isSidebarCollapsed">
+                    <button class="sidebar-toggle smooth-transition" @click="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
                     <h2 class="page-title">Sécurité</h2>
                 </div>
                 
                 <div class="navbar-right">
+                    <button id="logoutBtn" class="btn btn-danger" style="margin-right: 1.5rem; font-weight: bold; background: linear-gradient(90deg, #ff3b3b 0%, #b31217 100%); border: none; border-radius: 2rem; padding: 0.5rem 1.5rem; color: #fff; box-shadow: 0 2px 8px rgba(255,59,59,0.15); transition: background 0.3s, box-shadow 0.3s;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
                     <div class="user-menu">
-                        <div class="user-avatar">
+                        <div class="user-avatar hover-scale">
                             <i class="fas fa-user"></i>
                         </div>
                     </div>
@@ -171,28 +174,7 @@
                         </button>
                     </div>
 
-                    <div class="users-list">
-                        <div class="user-card" v-for="user in users" :key="user.id">
-                            <div class="user-info">
-                                <div class="user-avatar">
-                                    {{ user.name.charAt(0) }}
-                                </div>
-                                <div class="user-details">
-                                    <h4>{{ user.name }}</h4>
-                                    <p>{{ user.email }}</p>
-                                    <span class="badge" :class="getRoleBadgeClass(user.role)">{{ user.role }}</span>
-                                </div>
-                            </div>
-                            <div class="user-actions">
-                                <button class="btn-secondary" @click="editUser(user)" title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-danger" @click="deleteUser(user)" title="Supprimer">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="mock-users-list"></div>
                 </div>
 
                 <!-- Roles Management Section -->
@@ -309,5 +291,41 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script type="module" src="../assets/js/security.js"></script>
+    <script type="module">
+    import { supabaseClient } from '../assets/js/supabase-client.js';
+    import { mockData } from '../assets/js/mock-data.js';
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            const result = await supabaseClient.logout();
+            if (result.success) {
+                window.location.href = '../index.html';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: result.error || 'Erreur lors de la déconnexion.',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                });
+            }
+        });
+    }
+
+    const container = document.getElementById('mock-users-list');
+    if (container) {
+        let html = '<table class="table table-bordered table-hover"><thead><tr><th>Nom</th><th>Email</th><th>Rôle</th></tr></thead><tbody>';
+        mockData.auth_users.forEach(u =>
+            html += `<tr>
+                <td>${u.first_name} ${u.last_name}</td>
+                <td>${u.email}</td>
+                <td>${u.is_admin ? 'Admin' : (u.is_superuser ? 'Superuser' : 'Utilisateur')}</td>
+            </tr>`
+        );
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+    </script>
 </body>
 </html>

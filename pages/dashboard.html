@@ -343,17 +343,9 @@
                 </div>
                 
                 <div class="navbar-right">
-                    <div class="navbar-stats animate-fade-in">
-                        <div class="stat-item">
-                            <span class="stat-value" x-text="stats.totalEvaluations">0</span>
-                            <span class="stat-label">Évaluations</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value" x-text="stats.responseRate + '%'">0%</span>
-                            <span class="stat-label">Taux de réponse</span>
-                        </div>
-                    </div>
-                    
+                    <button id="logoutBtn" class="btn btn-danger" style="margin-right: 1.5rem; font-weight: bold; background: linear-gradient(90deg, #ff3b3b 0%, #b31217 100%); border: none; border-radius: 2rem; padding: 0.5rem 1.5rem; color: #fff; box-shadow: 0 2px 8px rgba(255,59,59,0.15); transition: background 0.3s, box-shadow 0.3s;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
                     <div class="user-menu">
                         <div class="user-avatar hover-scale">
                             <i class="fas fa-user"></i>
@@ -621,6 +613,9 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Mock Sessions List -->
+                <div id="mock-sessions-list"></div>
             </div>
         </main>
     </div>
@@ -644,5 +639,42 @@
     <script src="/assets/js/mock-data.js"></script>
     <script type="module" src="../assets/js/supabase-client.js"></script>
     <script type="module" src="../assets/js/dashboard.js"></script>
+    <script type="module">
+    import { supabaseClient } from '../assets/js/supabase-client.js';
+    import { mockData } from '../assets/js/mock-data.js';
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            const result = await supabaseClient.logout();
+            if (result.success) {
+                window.location.href = '../index.html';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: result.error || 'Erreur lors de la déconnexion.',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                });
+            }
+        });
+    }
+
+    const container = document.getElementById('mock-sessions-list');
+    if (container) {
+        let html = '<table class="table table-bordered table-hover"><thead><tr><th>Titre</th><th>Ouverture</th><th>Fermeture</th><th>Créateur</th></tr></thead><tbody>';
+        mockData.sessions_evaluation.forEach(s =>
+            html += `<tr>
+                <td>${s.titre}</td>
+                <td>${s.date_ouverture}</td>
+                <td>${s.date_fermeture}</td>
+                <td>${s.created_by_id}</td>
+            </tr>`
+        );
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+    </script>
 </body>
 </html>

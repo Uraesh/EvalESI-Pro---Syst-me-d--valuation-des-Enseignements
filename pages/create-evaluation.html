@@ -21,8 +21,8 @@
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="../assets/css/forms.css">
     <link rel="stylesheet" href="../assets/css/animations.css">
-    <link rel="stylesheet" href="/assets/css/create-evaluation.css">   
-    
+    <link rel="stylesheet" href="/assets/css/create-evaluation.css">
+    <link rel="stylesheet" href="../assets/css/evaluation-form-styles.css">
     
 </head>
 <body>
@@ -108,26 +108,18 @@
             <!-- Top Navigation Bar -->
             <nav class="top-navbar">
                 <div class="navbar-left">
-                    <button class="sidebar-toggle" @click="isSidebarCollapsed = !isSidebarCollapsed">
+                    <button class="sidebar-toggle smooth-transition" @click="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h2 class="page-title">Création d'Évaluation</h2>
+                    <h2 class="page-title">Créer évaluation</h2>
                 </div>
                 
                 <div class="navbar-right">
-                    <div class="navbar-stats">
-                        <div class="stat-item">
-                            <span class="stat-value" x-text="stats.totalEvaluations">0</span>
-                            <span class="stat-label">Évaluations</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value" x-text="stats.responseRate + '%'">0%</span>
-                            <span class="stat-label">Taux de réponse</span>
-                        </div>
-                    </div>
-                    
+                    <button id="logoutBtn" class="btn btn-danger" style="margin-right: 1.5rem; font-weight: bold; background: linear-gradient(90deg, #ff3b3b 0%, #b31217 100%); border: none; border-radius: 2rem; padding: 0.5rem 1.5rem; color: #fff; box-shadow: 0 2px 8px rgba(255,59,59,0.15); transition: background 0.3s, box-shadow 0.3s;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
                     <div class="user-menu">
-                        <div class="user-avatar">
+                        <div class="user-avatar hover-scale">
                             <i class="fas fa-user"></i>
                         </div>
                     </div>
@@ -292,16 +284,53 @@
         <i class="fas fa-eye"></i>
     </button>
     
-    <!-- Zone de prévisualisation dans create-evaluation.html -->
-    <div id="formContainer" class="my-4"></div>
+    <!-- Conteneur du formulaire d'évaluation intégré -->
+    <div id="evaluationFormContainer" class="evaluation-form-container container my-4" style="display: none;">
+        <!-- Le contenu sera chargé dynamiquement ici -->
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.12.0/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nanoid@4.0.2/dist/bundle.js"></script>
-    <script src="/assets/js/mock-data.js"></script>
-    <script type="module" src="/assets/js/supabase-client.js"></script>
-    <script type="module" src="/assets/js/create-evaluation.js"></script>
+    <script src="../assets/js/mock-data.js"></script>
+    <script type="module">
+    import { supabaseClient } from '../assets/js/supabase-client.js';
+
+    // Gestion de la déconnexion
+    document.addEventListener('DOMContentLoaded', () => {
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    const result = await supabaseClient.logout();
+                    if (result.success) {
+                        window.location.href = '../index.html';
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erreur',
+                            text: result.error || 'Erreur lors de la déconnexion.',
+                            background: '#1a1a1a',
+                            color: '#fff',
+                        });
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la déconnexion:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: 'Une erreur est survenue lors de la déconnexion.',
+                        background: '#1a1a1a',
+                        color: '#fff',
+                    });
+                }
+            });
+        }
+    });
+    </script>
+    <script type="module" src="../assets/js/create-evaluation.js"></script>
 </body>
 </html>

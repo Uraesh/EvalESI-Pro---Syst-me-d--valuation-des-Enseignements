@@ -1,0 +1,189 @@
+/* =============================================================================
+   EVALUATION-FORM-STYLES.CSS - Styles pour le formulaire d'évaluation intégré
+   ============================================================================= */
+
+/* Conteneur principal du formulaire d'évaluation */
+.evaluation-form-container {
+    display: none;
+    background: var(--dark-surface);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    margin-top: 2rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--dark-border);
+}
+
+/* En-tête du formulaire d'évaluation */
+.evaluation-header {
+    background: var(--dark-surface-hover);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--dark-border);
+}
+
+.evaluation-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--dark-text);
+}
+
+.evaluation-stats {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+/* Barre de progression */
+.progress {
+    height: 8px;
+    background-color: var(--dark-surface-hover);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.progress-bar {
+    background: var(--esi-accent);
+    transition: width 0.3s ease;
+}
+
+/* Section des critères */
+.criteria-section {
+    background: var(--dark-surface);
+    border: 1px solid var(--dark-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.section-icon {
+    background: var(--esi-accent);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: white;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--dark-text);
+}
+
+.section-subtitle {
+    font-size: 0.875rem;
+    color: var(--dark-text-muted);
+    margin: 0.25rem 0 0 0;
+}
+
+/* Éléments de critère */
+.criteria-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.criteria-item:last-child {
+    border-bottom: none;
+}
+
+.criteria-text {
+    flex: 1;
+    margin-right: 1.5rem;
+    color: var(--dark-text);
+}
+
+/* Boutons de notation */
+.rating-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rating-btn {
+    width: 50px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--dark-border);
+    background: var(--dark-surface);
+    color: var(--dark-text-muted);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.rating-btn:hover {
+    background: var(--dark-surface-hover);
+    color: var(--dark-text);
+}
+
+.rating-btn.selected {
+    background: var(--esi-accent);
+    color: white;
+    border-color: var(--esi-accent);
+}
+
+/* Section moyenne */
+.section-average {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--dark-border);
+    font-size: 0.9rem;
+    color: var(--dark-text-muted);
+}
+
+.section-average-value {
+    font-weight: 600;
+    color: var(--dark-text);
+}
+
+/* Pied de page du formulaire */
+.evaluation-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--dark-border);
+}
+
+/* Réactivité */
+@media (max-width: 768px) {
+    .criteria-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .criteria-text {
+        margin-bottom: 1rem;
+        margin-right: 0;
+    }
+    
+    .rating-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .rating-btn {
+        flex: 1;
+    }
+}

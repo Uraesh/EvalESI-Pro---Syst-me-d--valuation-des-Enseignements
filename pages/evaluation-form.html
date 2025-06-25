@@ -657,6 +657,9 @@
                     </small>
                 </div>
             </div>
+
+            <!-- Mock Evaluation Calculation -->
+            <div id="mock-eval-calc"></div>
         </main>
     </div>
     <!-- Success Modal -->
@@ -679,6 +682,16 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
+    <script type="module">
+        import { mockData } from '../assets/js/mock-data.js';
+        const container = document.getElementById('mock-eval-calc');
+        if (container) {
+            const scores = mockData.reponses_evaluation.map(r => r.score_global || 0);
+            const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
+            container.innerHTML = `<div class=\"alert alert-info\">Score global moyen : <b>${avg}</b> <br>Nombre de réponses : <b>${scores.length}</b></div>`;
+        }
+    </script>
+
     <script>
         // Données des critères d'évaluation
         const evaluationCriteria = {

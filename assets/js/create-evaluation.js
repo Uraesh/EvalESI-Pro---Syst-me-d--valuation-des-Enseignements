@@ -215,12 +215,72 @@ document.addEventListener('alpine:init', () => {
             const className = document.getElementById('className').value;
           
             if (!teacher || !subject || !level || !className) {
-                Swal.fire({ /* ton alerte ici */ });
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Champs manquants',
+                    text: 'Veuillez remplir tous les champs du formulaire avant de prévisualiser.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#2563eb',
+                    background: '#1e293b',
+                    color: '#f8fafc'
+                });
                 return;
             }
-          
-            const params = new URLSearchParams({ teacher, subject, level, class: className });
-            window.open(`evaluation-form.html`);
+
+            // Créer une nouvelle instance de la modale
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.id = 'evaluationPreviewModal';
+            modal.setAttribute('tabindex', '-1');
+            modal.setAttribute('aria-labelledby', 'evaluationPreviewModalLabel');
+            modal.setAttribute('aria-hidden', 'true');
+            
+            // Contenu de la modale
+            modal.innerHTML = `
+                <div class="modal-dialog modal-fullscreen">
+                    <div class="modal-content bg-dark text-light">
+                        <div class="modal-header border-secondary">
+                            <h5 class="modal-title" id="evaluationPreviewModalLabel">
+                                <i class="fas fa-eye me-2"></i>
+                                Prévisualisation du formulaire d'évaluation
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="modal-body p-0">
+                            <iframe id="evaluationIframe" style="width: 100%; height: 100%; min-height: 80vh; border: none;"></iframe>
+                        </div>
+                        <div class="modal-footer border-secondary">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Fermer
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="window.open('evaluation-form.html?teacher=${encodeURIComponent(teacher)}&subject=${encodeURIComponent(subject)}&level=${encodeURIComponent(level)}&class=${encodeURIComponent(className)}', '_blank')">
+                                <i class="fas fa-external-link-alt me-2"></i>Ouvrir dans un nouvel onglet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Ajouter la modale au document
+            document.body.appendChild(modal);
+            
+            // Initialiser la modale
+            const modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+            
+            // Charger le formulaire d'évaluation dans l'iframe
+            const iframe = modal.querySelector('#evaluationIframe');
+            iframe.onload = function() {
+                // Une fois chargé, on peut ajouter des styles ou du contenu supplémentaire si nécessaire
+            };
+            
+            // Charger le formulaire d'évaluation avec les paramètres
+            iframe.src = `evaluation-form.html?teacher=${encodeURIComponent(teacher)}&subject=${encodeURIComponent(subject)}&level=${encodeURIComponent(level)}&class=${encodeURIComponent(className)}`;
+            
+            // Nettoyer la modale lorsqu'elle est fermée
+            modal.addEventListener('hidden.bs.modal', function () {
+                document.body.removeChild(modal);
+            });
         },
 
         // Méthodes utilitaires
