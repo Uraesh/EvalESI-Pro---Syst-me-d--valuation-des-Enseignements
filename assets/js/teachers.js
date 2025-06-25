@@ -147,7 +147,7 @@ document.addEventListener('alpine:init', () => {
         /**
          * Soumet le formulaire d'ajout d'enseignant
          */
-        async submitAddTeacher() {
+        async submitAddTeacherForm() { // Renommée pour correspondre à l'appel HTML @submit.prevent
             const supabase = getSupabaseClient();
             if (!supabase) {
                 this.showError("Client Supabase non disponible.");
@@ -184,6 +184,8 @@ document.addEventListener('alpine:init', () => {
                         const modal = bootstrap.Modal.getInstance(modalElement);
                         if (modal) modal.hide();
                     }
+                    // Réinitialiser le formulaire après succès
+                    this.newTeacher = { nom: '', prenom: '', email: '', telephone: '', specialite: '', date_embauche: '', is_active: true };
                 }
             } catch (error) {
                 console.error('Erreur d\'ajout d\'enseignant:', error);
@@ -197,12 +199,15 @@ document.addEventListener('alpine:init', () => {
         },
 
         /**
-         * Modifie un enseignant (placeholder - implémentation future)
+         * Ouvre la modal d'édition pour un enseignant (placeholder)
          */
-        async editTeacher(teacher) {
-            // TODO: Implémenter la logique d'édition, probablement avec une autre modal
-            console.log('Modifier enseignant (TODO):', teacher);
-            Swal.fire('Fonctionnalité à venir', `L'édition de l'enseignant ${teacher.nom} ${teacher.prenom} sera bientôt disponible.`, 'info');
+        async openEditTeacherModal(teacher) {
+            // TODO: Implémenter la logique d'édition
+            // 1. Cloner l'enseignant pour éviter la modification directe de la liste
+            // 2. Remplir un formulaire d'édition (potentiellement une autre modal)
+            // 3. Appeler une méthode `submitEditTeacher`
+            console.log('Ouvrir modal édition pour (TODO):', teacher);
+            Swal.fire('Fonctionnalité à venir', `L'édition de ${teacher.nom} ${teacher.prenom} sera implémentée.`, 'info');
         },
 
         /**
