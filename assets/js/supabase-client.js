@@ -51,10 +51,10 @@ class SupabaseClient {
         // un outil de build (comme Vite, Webpack, Rollup) pour gérer les variables d'environnement.
         // =================================================================================
 
-        const supabaseUrl = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL) || "YOUR_SUPABASE_URL_PLACEHOLDER";
-        const supabaseKey = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_KEY) || "YOUR_SUPABASE_KEY_PLACEHOLDER";
+        const supabaseUrl = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL) || "https://goyxxilqkouwtznfvuok.supabase.co";
+        const supabaseKey = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_KEY) || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdveXh4aWxxa291d3R6bmZ2dW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3NzU4NDQsImV4cCI6MjA2NDM1MTg0NH0.o1GTkUFpapkuSeSzoIlrpHABpssdMY7t-PbQKO6wNiU";
 
-        if (supabaseUrl === "YOUR_SUPABASE_URL_PLACEHOLDER" || supabaseKey === "YOUR_SUPABASE_KEY_PLACEHOLDER") {
+        if (supabaseUrl === "https://goyxxilqkouwtznfvuok.supabase.co" || supabaseKey === "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdveXh4aWxxa291d3R6bmZ2dW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3NzU4NDQsImV4cCI6MjA2NDM1MTg0NH0.o1GTkUFpapkuSeSzoIlrpHABpssdMY7t-PbQKO6wNiU") {
             console.error("***********************************************************************************");
             console.error("ERREUR CRITIQUE: URL ou Clé Supabase non configurée pour le client.");
             console.error("Veuillez définir window.APP_CONFIG.SUPABASE_URL et window.APP_CONFIG.SUPABASE_KEY,");
