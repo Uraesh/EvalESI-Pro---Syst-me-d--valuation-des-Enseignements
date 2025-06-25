@@ -659,6 +659,33 @@ body::before {
     transform: translateY(-1px);
 }
 
+/* Custom button for ESI danger color */
+.btn-custom-danger {
+    background-color: var(--esi-danger);
+    border-color: var(--esi-danger);
+    color: white;
+}
+
+.btn-custom-danger:hover {
+    background-color: color-mix(in srgb, var(--esi-danger) 85%, black);
+    border-color: color-mix(in srgb, var(--esi-danger) 80%, black);
+    color: white;
+}
+
+/* Custom button for ESI info color */
+.btn-custom-info {
+    background-color: var(--esi-info);
+    border-color: var(--esi-info);
+    color: white;
+}
+
+.btn-custom-info:hover {
+    background-color: color-mix(in srgb, var(--esi-info) 85%, black);
+    border-color: color-mix(in srgb, var(--esi-info) 80%, black);
+    color: white;
+}
+
+
 /* =============================================================================
    QUICK ACTIONS - Raccourcis et actions rapides
    ============================================================================= */

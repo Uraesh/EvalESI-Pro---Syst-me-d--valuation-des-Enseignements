@@ -287,12 +287,15 @@
                                     <div v-for="(criterion, index) in evaluationConfig.criteria" :key="index" class="criteria-item">
                                         <input type="text" class="form-control" v-model="criterion.name">
                                         <input type="number" class="form-control" v-model="criterion.weight">
-                                        <button class="btn btn-danger btn-sm" @click="removeCriterion(index)" title="Supprimer ce critère">
+                                        <button class="btn btn-custom-danger btn-sm" @click="removeCriterion(index)" title="Supprimer ce critère">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <button class="btn btn-primary btn-sm" @click="addCriterion">Ajouter un critère</button>
+                                <!-- Assumant que .btn-primary est correctement surchargé par style.css pour le style ESI -->
+                                <button class="btn btn-primary btn-sm" @click="addCriterion">
+                                    <i class="fas fa-plus me-1"></i>Ajouter un critère
+                                </button>
                             </div>
                         </div>
 
