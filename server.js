@@ -13,7 +13,30 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Middleware
-app.use(cors());
+
+// Configuration CORS
+// TODO: Remplacez 'https://votre-domaine-frontend.com' par votre domaine frontend réel en production.
+// Pour le développement local, vous pouvez autoriser localhost avec le port de votre frontend.
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? ['https://votre-domaine-frontend.com'] // Ajoutez ici d'autres domaines de production si nécessaire
+  : [`http://localhost:${process.env.PORT || 3000}`, `http://127.0.0.1:${process.env.PORT || 3000}`]; // Autorise le serveur lui-même pour servir les pages
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Autoriser les requêtes sans origine (ex: Postman, requêtes serveur à serveur, applications mobiles)
+    // ou si l'origine est dans la liste autorisée.
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Non autorisé par CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Spécifiez les méthodes HTTP autorisées
+  allowedHeaders: ['Content-Type', 'Authorization'], // Spécifiez les en-têtes autorisés
+  credentials: true // Si vous utilisez des cookies ou des sessions
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.static(join(__dirname, 'pages')));
 // Configuration des routes pour les fichiers statiques

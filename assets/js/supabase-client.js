@@ -51,16 +51,41 @@ class SupabaseClient {
         // un outil de build (comme Vite, Webpack, Rollup) pour gérer les variables d'environnement.
         // =================================================================================
 
-        const supabaseUrl = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL) || "https://goyxxilqkouwtznfvuok.supabase.co";
-        const supabaseKey = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_KEY) || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdveXh4aWxxa291d3R6bmZ2dW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3NzU4NDQsImV4cCI6MjA2NDM1MTg0NH0.o1GTkUFpapkuSeSzoIlrpHABpssdMY7t-PbQKO6wNiU";
+        // const supabaseUrl = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL) || "https://goyxxilqkouwtznfvuok.supabase.co";
+        // const supabaseKey = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_KEY) || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdveXh4aWxxa291d3R6bmZ2dW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3NzU4NDQsImV4cCI6MjA2NDM1MTg0NH0.o1GTkUFpapkuSeSzoIlrpHABpssdMY7t-PbQKO6wNiU";
 
-        if (supabaseUrl === "https://goyxxilqkouwtznfvuok.supabase.co" || supabaseKey === "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdveXh4aWxxa291d3R6bmZ2dW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3NzU4NDQsImV4cCI6MjA2NDM1MTg0NH0.o1GTkUFpapkuSeSzoIlrpHABpssdMY7t-PbQKO6wNiU") {
+        // if (supabaseUrl === "https://goyxxilqkouwtznfvuok.supabase.co" || supabaseKey === "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdveXh4aWxxa291d3R6bmZ2dW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3NzU4NDQsImV4cCI6MjA2NDM1MTg0NH0.o1GTkUFpapkuSeSzoIlrpHABpssdMY7t-PbQKO6wNiU") {
+        //     console.error("***********************************************************************************");
+        //     console.error("ERREUR CRITIQUE: URL ou Clé Supabase non configurée pour le client.");
+        //     console.error("Veuillez définir window.APP_CONFIG.SUPABASE_URL et window.APP_CONFIG.SUPABASE_KEY,");
+        //     console.error("ou remplacer les placeholders dans supabase-client.js.");
+        //     console.error("Le client Supabase ne pourra pas s'initialiser correctement.");
+        //     console.error("***********************************************************************************");
+        // }
+        const supabaseUrl = window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL;
+        const supabaseKey = window.APP_CONFIG && window.APP_CONFIG.SUPABASE_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
             console.error("***********************************************************************************");
-            console.error("ERREUR CRITIQUE: URL ou Clé Supabase non configurée pour le client.");
-            console.error("Veuillez définir window.APP_CONFIG.SUPABASE_URL et window.APP_CONFIG.SUPABASE_KEY,");
-            console.error("ou remplacer les placeholders dans supabase-client.js.");
-            console.error("Le client Supabase ne pourra pas s'initialiser correctement.");
+            console.error("ERREUR CRITIQUE: SUPABASE_URL ou SUPABASE_KEY ne sont pas définies dans window.APP_CONFIG.");
+            console.error("Le client Supabase côté client ne pourra pas s'initialiser.");
+            console.error("Veuillez vous assurer que window.APP_CONFIG.SUPABASE_URL et window.APP_CONFIG.SUPABASE_KEY sont correctement définies dans votre HTML.");
+            console.error("L'application ne fonctionnera pas correctement sans ces configurations.");
             console.error("***********************************************************************************");
+            // Optionnel: Afficher un message à l'utilisateur directement sur la page
+            if (document.body) {
+                const errorDiv = document.createElement('div');
+                errorDiv.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; width: 100%; background-color: red; color: white; padding: 20px; text-align: center; z-index: 9999; font-family: sans-serif;">
+                        <strong>ERREUR DE CONFIGURATION CRITIQUE :</strong> Les informations de connexion à la base de données (Supabase) sont manquantes.
+                        L'application ne peut pas fonctionner. Veuillez contacter l'administrateur.
+                    </div>`;
+                document.body.prepend(errorDiv);
+            }
+            // Il n'est pas possible de "throw new Error" ici de manière à arrêter proprement toute l'initialisation
+            // des scripts de manière fiable sans risquer d'autres erreurs. Le client Supabase sera initialisé avec undefined,
+            // et les opérations échoueront, ce qui est le comportement souhaité en cas de non-configuration.
+            // Les logs d'erreur et le message à l'utilisateur sont les principales actions ici.
         }
 
         this.supabase = createClient(supabaseUrl, supabaseKey);

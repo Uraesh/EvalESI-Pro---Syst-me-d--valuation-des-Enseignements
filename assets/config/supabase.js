@@ -17,6 +17,7 @@ if (!supabaseUrl || !supabaseKey) {
     console.error("SUPABASE_KEY=your_supabase_anon_key")
     console.error("***********************************************************************************")
     // Optionnel: throw new Error("Supabase URL/Key missing"); ou process.exit(1) si l'app ne peut pas tourner sans.
+    throw new Error("ERREUR CRITIQUE: SUPABASE_URL ou SUPABASE_KEY ne sont pas définies. L'application ne peut pas démarrer.");
 }
 
 // Création du client Supabase
