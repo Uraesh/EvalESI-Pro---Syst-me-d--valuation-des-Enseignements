@@ -61,10 +61,19 @@ document.addEventListener('alpine:init', () => {
                         .from('enseignants')
                         .select('*')
                         .order('nom', { ascending: true });
+                
                 if (error) throw error;
-                this.teachers = data;
+                
+                // Mapper les données pour correspondre au modèle attendu
+                this.teachers = data.map(teacher => ({
+                    ...teacher,
+                    status: teacher.is_active ? 'active' : 'inactive',
+                    evaluations: teacher.nb_evaluations || 0
+                }));
+                
                 this.updateStats();
             } catch (error) {
+                console.error('Erreur détaillée:', error);
                 this.showError('Erreur lors du chargement des enseignants');
             }
         },
@@ -74,7 +83,7 @@ document.addEventListener('alpine:init', () => {
          */
         updateStats() {
             this.stats.totalTeachers = this.teachers.length;
-            this.stats.activeTeachers = this.teachers.filter(t => t.status === 'active').length;
+            this.stats.activeTeachers = this.teachers.filter(t => t.is_active === true).length;
         },
 
         // =========================================================================
@@ -99,7 +108,7 @@ document.addEventListener('alpine:init', () => {
                     form.reportValidity();
                     return;
                 }
-
+                
                 const teacherData = {
                     nom: document.getElementById('teacherName').value,
                     prenom: document.getElementById('teacherPrenom').value,
@@ -107,15 +116,11 @@ document.addEventListener('alpine:init', () => {
                     telephone: document.getElementById('teacherPhone').value,
                     specialite: document.getElementById('teacherSpecialty').value,
                     date_embauche: document.getElementById('teacherHireDate').value,
-                    status: document.getElementById('teacherStatus').value,
-                    evaluations: 0
+                    is_active: document.getElementById('teacherStatus').value === 'active',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
                 };
-
-                // Désactiver le bouton pendant l'insertion
-                const submitButton = form.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> En cours...';
-
+                
                 const { data, error } = await supabaseClient
                     .from('enseignants')
                     .insert([teacherData])
@@ -135,6 +140,7 @@ document.addEventListener('alpine:init', () => {
                 form.reset();
 
                 // Réactiver le bouton
+                const submitButton = form.querySelector('button[type="submit"]');
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="fas fa-plus"></i> Ajouter';
 
@@ -165,16 +171,30 @@ document.addEventListener('alpine:init', () => {
         // Ajouter une méthode pour mettre à jour un enseignant
         async updateTeacher(teacherId, updates) {
             try {
-                const { error } = await supabaseClient
+                // Préparer les données pour la mise à jour
+                const updateData = {
+                    ...updates,
+                    is_active: updates.status === 'active',
+                    updated_at: new Date().toISOString()
+                };
+                
+                // Supprimer le champ status qui n'existe pas dans la table
+                delete updateData.status;
+                
+                const { data, error } = await supabaseClient
                     .from('enseignants')
-                    .update(updates)
-                    .eq('id', teacherId);
-
+                    .update(updateData)
+                    .eq('id', teacherId)
+                    .select('*');
+                    
                 if (error) throw error;
-                return true;
+                
+                // Recharger la liste des enseignants
+                await this.loadTeachers();
+                return { success: true, data: data[0] };
             } catch (error) {
                 console.error('Erreur lors de la mise à jour:', error);
-                throw error;
+                return { success: false, error };
             }
         },
 

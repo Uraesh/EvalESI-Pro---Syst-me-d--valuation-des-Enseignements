@@ -59,14 +59,32 @@ document.addEventListener('alpine:init', () => {
          */
         async loadSessions() {
             try {
+                // Récupérer les sessions avec les données liées (enseignements, enseignants, classes, matières)
                 const { data, error } = await supabaseClient
                     .from('sessions_evaluation')
-                    .select('*')
-                    .order('date_evaluation', { ascending: false });
+                    .select(`
+                        *,
+                        enseignements:enseignements(
+                            *,
+                            enseignant:enseignants(*),
+                            classe:classes(*),
+                            matiere:matieres(*)
+                        )
+                    `)
+                    .order('date_ouverture', { ascending: false });
 
                 if (error) throw error;
 
-                this.sessions = data;
+                // Transformer les données pour l'affichage
+                this.sessions = data.map(session => ({
+                    ...session,
+                    // Ajouter des propriétés calculées pour faciliter l'affichage
+                    status: this.calculateSessionStatus(session),
+                    enseignant: session.enseignements?.[0]?.enseignant,
+                    classe: session.enseignements?.[0]?.classe,
+                    matiere: session.enseignements?.[0]?.matiere
+                }));
+
                 this.updateStats();
             } catch (error) {
                 console.error('Erreur de chargement des sessions:', error);
@@ -98,7 +116,21 @@ document.addEventListener('alpine:init', () => {
          */
         updateStats() {
             this.stats.totalSessions = this.sessions.length;
-            this.stats.activeSessions = this.sessions.filter(s => s.status === 'active').length;
+            this.stats.activeSessions = this.sessions.filter(s => this.calculateSessionStatus(s) === 'active').length;
+        },
+
+        /**
+         * Calcule le statut d'une session
+         */
+        calculateSessionStatus(session) {
+            const now = new Date();
+            const dateOuverture = new Date(session.date_ouverture);
+            const dateFermeture = new Date(session.date_fermeture);
+            
+            if (!session.is_active) return 'inactive';
+            if (now < dateOuverture) return 'scheduled';
+            if (now > dateFermeture) return 'closed';
+            return 'active';
         },
 
         // =========================================================================
@@ -123,30 +155,79 @@ document.addEventListener('alpine:init', () => {
                     form.reportValidity();
                     return;
                 }
-                const sessionData = {
-                    date_ouverture: document.getElementById('sessionDateStart').value,
-                    date_fermeture: document.getElementById('sessionDateEnd').value,
-                    enseignant_id: document.getElementById('sessionTeacher').value,
-                    titre: document.getElementById('sessionModule').value,
-                    status: document.getElementById('sessionStatus').value,
-                    reponses: 0,
-                    total: 0
-                };
-                if (!sessionData.enseignant_id || !sessionData.titre) {
-                    this.showError('Veuillez remplir tous les champs requis');
-                    return;
+
+                // 1. Vérifier si l'enseignement existe
+                const enseignantId = document.getElementById('sessionTeacher').value;
+                const matiereId = document.getElementById('sessionSubject').value;
+                const classeId = document.getElementById('sessionClass').value;
+                const anneeAcademiqueId = document.getElementById('sessionAcademicYear').value;
+
+                // 2. Créer ou récupérer l'enseignement
+                const { data: enseignement, error: enseignementError } = await supabaseClient
+                    .from('enseignements')
+                    .select('id')
+                    .eq('enseignant_id', enseignantId)
+                    .eq('matiere_id', matiereId)
+                    .eq('classe_id', classeId)
+                    .single();
+
+                let enseignementId;
+                
+                if (enseignementError || !enseignement) {
+                    // Créer un nouvel enseignement
+                    const { data: newEnseignement, error: createError } = await supabaseClient
+                        .from('enseignements')
+                        .insert({
+                            enseignant_id: enseignantId,
+                            matiere_id: matiereId,
+                            classe_id: classeId,
+                            annee_academique_id: anneeAcademiqueId,
+                            volume_horaire: 0,
+                            semestre: 'S1',
+                            date_debut: new Date().toISOString(),
+                            date_fin: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+                            is_active: true
+                        })
+                        .select('id')
+                        .single();
+                    
+                    if (createError) throw createError;
+                    enseignementId = newEnseignement.id;
+                } else {
+                    enseignementId = enseignement.id;
                 }
-                const { error } = await supabaseClient
+
+                // 3. Créer la session d'évaluation
+                const sessionData = {
+                    enseignement_id: enseignementId,
+                    titre: document.getElementById('sessionName').value,
+                    description: document.getElementById('sessionDescription').value || '',
+                    token: crypto.randomUUID(),
+                    date_ouverture: document.getElementById('sessionStartDate').value,
+                    date_fermeture: document.getElementById('sessionEndDate').value,
+                    created_by_id: (await supabaseClient.auth.getUser()).data.user.id,
+                    is_active: true,
+                    nb_reponses: 0,
+                    nb_vues: 0
+                };
+
+                const { data, error } = await supabaseClient
                     .from('sessions_evaluation')
-                    .insert([sessionData]);
+                    .insert([sessionData])
+                    .select('*');
+
                 if (error) throw error;
+
+                await this.loadSessions();
+                
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addSessionModal'));
                 modal.hide();
                 form.reset();
-                await this.loadSessions();
+
                 this.showSuccess('Session créée avec succès');
             } catch (error) {
-                this.showError('Erreur lors de la création de la session');
+                console.error('Erreur de création de session:', error);
+                this.showError(`Erreur lors de la création de la session: ${error.message}`);
             }
         },
 
@@ -166,20 +247,23 @@ document.addEventListener('alpine:init', () => {
         /**
          * Supprime une session
          */
-        async deleteSession(session) {
+        async closeSession(session) {
             try {
                 const { error } = await supabaseClient
                     .from('sessions_evaluation')
-                    .delete()
+                    .update({ 
+                        is_active: false,
+                        updated_at: new Date().toISOString()
+                    })
                     .eq('id', session.id);
 
                 if (error) throw error;
 
                 await this.loadSessions();
-                this.showSuccess('Session supprimée avec succès');
+                this.showSuccess('Session clôturée avec succès');
             } catch (error) {
-                console.error('Erreur de suppression:', error);
-                this.showError('Erreur lors de la suppression');
+                console.error('Erreur de clôture de session:', error);
+                this.showError(`Erreur lors de la clôture de la session: ${error.message}`);
             }
         },
 

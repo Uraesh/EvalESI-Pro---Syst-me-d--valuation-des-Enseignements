@@ -48,16 +48,42 @@ document.addEventListener('alpine:init', async () => {
                     window.location.href = '/index.html';
                     return;
                 }
-                const { data: stats } = await supabaseClient.executeWithRetry(() =>
-                    supabaseClient
-                        .from('statistiques_enseignants')
-                        .select('*')
-                        .single()
+
+                // Récupérer les statistiques agrégées
+                const { data: stats, error: statsError } = await supabaseClient
+                    .from('sessions_evaluation')
+                    .select(`
+                        id,
+                        nb_reponses,
+                        nb_vues,
+                        questions:questions_repenses(
+                            note
+                        )
+                    `);
+
+                if (statsError) throw statsError;
+
+                // Calculer les statistiques
+                const totalSessions = stats.length;
+                const totalReponses = stats.reduce((sum, session) => sum + (session.nb_reponses || 0), 0);
+                const totalVues = stats.reduce((sum, session) => sum + (session.nb_vues || 0), 0);
+                const totalNotes = stats.flatMap(session => 
+                    session.questions?.map(q => q.note) || []
                 );
-                this.stats = stats || { totalEvaluations: 0, responseRate: 0, satisfaction: 0 };
+                const moyenneSatisfaction = totalNotes.length > 0 
+                    ? (totalNotes.reduce((a, b) => a + b, 0) / totalNotes.length).toFixed(1)
+                    : 0;
+
+                this.stats = {
+                    totalEvaluations: totalSessions,
+                    responseRate: totalVues > 0 ? Math.round((totalReponses / totalVues) * 100) : 0,
+                    satisfaction: moyenneSatisfaction
+                };
+
                 this.updateLastUpdate();
             } catch (error) {
-                this.showError('Erreur lors du chargement des données');
+                console.error('Erreur détaillée:', error);
+                this.showError('Erreur lors du chargement des données du tableau de bord');
             } finally {
                 this.isLoading = false;
             }
@@ -68,40 +94,92 @@ document.addEventListener('alpine:init', async () => {
                 const { data, error } = await supabaseClient
                     .from('sessions_evaluation')
                     .select(`
-                        created_at,
+                        id,
                         titre,
+                        date_ouverture,
+                        date_fermeture,
+                        is_active,
+                        created_at,
+                        nb_reponses,
+                        nb_vues,
                         enseignements (
-                            enseignants (nom, prenom),
-                            matieres (libelle)
-                        ),
-                        is_active
+                            id,
+                            enseignant:enseignants (
+                                id,
+                                nom,
+                                prenom
+                            ),
+                            matiere:matieres (
+                                id,
+                                libelle
+                            ),
+                            classe:classes (
+                                id,
+                                nom
+                            )
+                        )
                     `)
                     .order('created_at', { ascending: false })
                     .limit(5);
+
                 if (error) throw error;
+
                 this.recentActivity = data.map(item => ({
-                    date: new Date(item.created_at).toLocaleDateString(),
-                    enseignant: `${item.enseignements.enseignants.nom} ${item.enseignements.enseignants.prenom}`,
-                    matiere: item.enseignements.matieres.libelle,
-                    statut: item.is_active ? 'Active' : 'Fermée'
+                    id: item.id,
+                    titre: item.titre,
+                    date: new Date(item.created_at).toLocaleDateString('fr-FR'),
+                    enseignant: item.enseignements?.enseignant 
+                        ? `${item.enseignements.enseignant.nom} ${item.enseignements.enseignant.prenom}`
+                        : 'Non défini',
+                    matiere: item.enseignements?.matiere?.libelle || 'Non définie',
+                    classe: item.enseignements?.classe?.nom || 'Non définie',
+                    statut: this.getSessionStatus(item),
+                    reponses: item.nb_reponses || 0,
+                    vues: item.nb_vues || 0
                 }));
             } catch (error) {
+                console.error('Erreur détaillée:', error);
                 this.showError('Erreur lors du chargement de l\'activité récente');
             }
+        },
+
+        /**
+         * Détermine le statut d'une session
+         */
+        getSessionStatus(session) {
+            const now = new Date();
+            const dateOuverture = new Date(session.date_ouverture);
+            const dateFermeture = new Date(session.date_fermeture);
+            
+            if (!session.is_active) return 'Fermée';
+            if (now < dateOuverture) return 'Planifiée';
+            if (now > dateFermeture) return 'Terminée';
+            return 'En cours';
         },
 
         // Initialisation des graphiques
         async initializeCharts() {
             try {
+                // Récupérer les statistiques des 30 derniers jours
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                
                 const { data, error } = await supabaseClient
-                    .from('statistiques_enseignants')
-                    .select('date, nombre_evaluations')
-                    .gte('date', this.getDateFromPeriod(this.selectedPeriod))
-                    .order('date', { ascending: true });
+                    .from('sessions_evaluation')
+                    .select(`
+                        created_at,
+                        nb_reponses,
+                        nb_vues,
+                        questions:questions_repenses(
+                            note
+                        )
+                    `)
+                    .gte('created_at', thirtyDaysAgo.toISOString())
+                    .order('created_at', { ascending: true });
                 if (error) throw error;
                 const chartData = {
-                    x: data.map(d => d.date),
-                    y: data.map(d => d.nombre_evaluations),
+                    x: data.map(d => d.created_at),
+                    y: data.map(d => d.nb_reponses),
                     type: 'scatter',
                     mode: 'lines+markers',
                     name: 'Évaluations',

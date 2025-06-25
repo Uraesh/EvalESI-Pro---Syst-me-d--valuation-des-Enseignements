@@ -76,7 +76,7 @@ document.addEventListener('alpine:init', () => {
                 const { data, error } = await supabaseClient
                     .from('matieres')
                     .select('*')
-                    .order('nom_matiere', { ascending: true });
+                    .order('libelle', { ascending: true });
 
                 if (error) throw error;
                 this.subjects = data;
@@ -91,22 +91,111 @@ document.addEventListener('alpine:init', () => {
             try {
                 this.isLoading = true;
                 
+                // 1. Vérifier si l'enseignement existe déjà
+                const { data: enseignement, error: enseignementError } = await supabaseClient
+                    .from('enseignements')
+                    .select('id')
+                    .eq('enseignant_id', this.selectedTeacher)
+                    .eq('classe_id', this.selectedClass)
+                    .eq('matiere_id', this.selectedSubject)
+                    .single(); // Ajout de single() pour s'assurer d'un seul résultat
+
+                let enseignementId;
+                
+                // 2. Si l'enseignement n'existe pas, le créer
+                if (enseignementError || !enseignement) {
+                    // Récupérer l'année académique active
+                    const { data: anneeActive, error: anneeError } = await supabaseClient
+                        .from('annees_academiques')
+                        .select('id')
+                        .eq('is_active', true)
+                        .single();
+                    
+                    if (anneeError || !anneeActive) {
+                        throw new Error('Aucune année académique active trouvée');
+                    }
+
+                    const { data: newEnseignement, error: createError } = await supabaseClient
+                        .from('enseignements')
+                        .insert({
+                            enseignant_id: this.selectedTeacher,
+                            classe_id: this.selectedClass,
+                            matiere_id: this.selectedSubject,
+                            annee_academique_id: anneeActive.id,
+                            volume_horaire: 0,
+                            semestre: 'S1',
+                            date_debut: new Date().toISOString(),
+                            date_fin: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+                            is_active: true,
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        })
+                        .select('id')
+                        .single();
+                    
+                    if (createError) throw createError;
+                    enseignementId = newEnseignement.id;
+                } else {
+                    enseignementId = enseignement.id;
+                }
+
+                // 3. Créer la session d'évaluation
                 const evaluationData = {
-                    token: nanoid(10),
+                    enseignement_id: enseignementId,
                     titre: this.title,
+                    description: this.description || '',
+                    token: crypto.randomUUID(), // Utilisation de l'API Web Crypto pour générer un UUID sécurisé
                     date_ouverture: this.startDate,
                     date_fermeture: this.endDate,
-                    enseignant_id: this.selectedTeacher,
-                    classe_id: this.selectedClass,
-                    matiere_id: this.selectedSubject,
-                    statut: 'active'
+                    created_by_id: (await supabaseClient.auth.getUser()).data.user.id,
+                    is_active: true,
+                    nb_reponses: 0,
+                    nb_vues: 0,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
                 };
 
-                const { error } = await supabaseClient
+                // 4. Insérer la session d'évaluation
+                const { data: session, error: sessionError } = await supabaseClient
                     .from('sessions_evaluation')
-                    .insert([evaluationData]);
-
-                if (error) throw error;
+                    .insert([evaluationData])
+                    .select('*');
+                    
+                if (sessionError) throw sessionError;
+                
+                // 5. Créer les questions par défaut pour cette évaluation
+                const defaultQuestions = [
+                    { 
+                        session_id: session[0].id, 
+                        type_question: 'note',
+                        intitule: 'Notez globalement cet enseignement',
+                        description: 'Sur une échelle de 1 à 5',
+                        est_obligatoire: true,
+                        ordre: 1,
+                        options: JSON.stringify([
+                            { valeur: 1, libelle: '1 - Très insatisfait' },
+                            { valeur: 2, libelle: '2 - Insatisfait' },
+                            { valeur: 3, libelle: '3 - Neutre' },
+                            { valeur: 4, libelle: '4 - Satisfait' },
+                            { valeur: 5, libelle: '5 - Très satisfait' }
+                        ])
+                    },
+                    { 
+                        session_id: session[0].id, 
+                        type_question: 'texte',
+                        intitule: 'Commentaires généraux',
+                        description: 'Laissez vos commentaires sur cet enseignement',
+                        est_obligatoire: false,
+                        ordre: 2,
+                        options: JSON.stringify({ max_length: 1000 })
+                    }
+                ];
+                
+                const { error: questionsError } = await supabaseClient
+                    .from('questions_evaluation')
+                    .insert(defaultQuestions);
+                    
+                if (questionsError) throw questionsError;
 
                 this.showSuccess('Évaluation créée avec succès');
                 this.resetForm();
