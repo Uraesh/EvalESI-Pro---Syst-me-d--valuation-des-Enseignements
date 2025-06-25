@@ -146,31 +146,32 @@
 
                 <!-- Settings Tabs -->
                 <div class="settings-tabs">
-                    <button class="tab-button" 
+                    <button class="btn-primary" 
                             :class="{ 'active': activeTab === 'system' }"
                             @click="activeTab = 'system'">
                         <i class="fas fa-cog"></i>
                         Configuration du Système
                     </button>
-                    <button class="tab-button"
+                    <button class="btn-primary"
                             :class="{ 'active': activeTab === 'security' }"
                             @click="activeTab = 'security'">
                         <i class="fas fa-shield-alt"></i>
                         Paramètres de Sécurité
                     </button>
-                    <button class="tab-button"
+                    <button class="btn-primary"
                             :class="{ 'active': activeTab === 'evaluations' }"
                             @click="activeTab = 'evaluations'">
                         <i class="fas fa-star"></i>
                         Paramètres des Évaluations
                     </button>
-                    <button class="tab-button"
+                    
+                    <button class="btn-primary"
                             :class="{ 'active': activeTab === 'notifications' }"
                             @click="activeTab = 'notifications'">
                         <i class="fas fa-bell"></i>
                         Paramètres des Notifications
                     </button>
-                    <button class="tab-button"
+                    <button class="btn-primary"
                             :class="{ 'active': activeTab === 'integrations' }"
                             @click="activeTab = 'integrations'">
                         <i class="fas fa-link"></i>
