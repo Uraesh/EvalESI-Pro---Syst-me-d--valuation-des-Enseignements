@@ -174,21 +174,30 @@
 
                 <!-- Sessions List -->
                 <div class="sessions-grid">
-                    <div class="teachers-header">
+                    <div class="teachers-header"> <!-- Utilise la classe .teachers-header, pourrait être .sessions-header pour la sémantique -->
                         <h3>Liste des Sessions</h3>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSessionModal">
+                        <button class="btn btn-primary" @click="openAddSessionModal()">
                             <i class="fas fa-plus"></i> Nouvelle Session
                         </button>
                     </div>
-<br>
-                    <div class="teachers-table">
+                    <br>
+                     <!-- Message d'erreur -->
+                    <div x-show="error" class="alert alert-danger" x-text="error"></div>
+
+                    <!-- Message si liste vide -->
+                    <div x-show="!isLoading && !error && sessions.length === 0" class="alert alert-info">
+                        Aucune session à afficher pour le moment.
+                    </div>
+
+                    <div class="teachers-table" x-show="!isLoading && !error && sessions.length > 0">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Date de début</th>
-                                    <th>Date de fin</th>
+                                    <th>Titre / Module</th>
                                     <th>Enseignant</th>
-                                    <th>Module</th>
+                                    <th>Classe</th>
+                                    <th>Début</th>
+                                    <th>Fin</th>
                                     <th>Statut</th>
                                     <th>Réponses</th>
                                     <th>Actions</th>
@@ -197,22 +206,26 @@
                             <tbody>
                                 <template x-for="session in sessions" :key="session.id">
                                     <tr>
+                                        <td x-text="session.module"></td>
+                                        <td x-text="session.enseignant"></td>
+                                        <td x-text="session.classe"></td>
                                         <td x-text="formatDate(session.dateStart)"></td>
                                         <td x-text="formatDate(session.dateEnd)"></td>
-                                        <td x-text="session.enseignant"></td>
-                                        <td x-text="session.module"></td>
                                         <td>
                                             <span class="badge" :class="getStatusClass(session.status)"
-                                                  x-text="getStatusText(session.status)">
+                                                  x-text="session.status">
                                             </span>
                                         </td>
-                                        <td x-text="session.reponses + '/' + session.total"></td>
+                                        <td x-text="`${session.reponses} / ${session.total}`"></td>
                                         <td>
-                                            <button class="btn btn-sm btn-custom-info" @click="editSession(session)" title="Modifier">
+                                            <button class="btn btn-sm btn-custom-info" @click="openEditSessionModal(session)" title="Modifier">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-custom-danger" @click="deleteSession(session)" title="Supprimer">
+                                            <button class="btn btn-sm btn-custom-danger" @click="confirmDeleteSession(session)" title="Supprimer">
                                                 <i class="fas fa-trash"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-warning" @click="closeSession(session)" x-show="session.is_active_db && session.status === 'Active'" title="Fermer la session">
+                                                <i class="fas fa-lock"></i>
                                             </button>
                                         </td>
                                     </tr>
@@ -227,48 +240,88 @@
 
     <!-- Modal d'ajout de session -->
     <div class="modal fade" id="addSessionModal" tabindex="-1" aria-labelledby="addSessionModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered"> <!-- Agrandir la modale -->
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addSessionModalLabel">Nouvelle Session d'Évaluation</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addSessionForm">
-                        <div class="mb-3">
-                            <label for="sessionDateStart" class="form-label">Date de début</label>
-                            <input type="date" class="form-control" id="sessionDateStart" name="date_ouverture" required>
+                    <form id="addSessionForm" @submit.prevent="submitAddSessionForm()">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="sessionTitle" class="form-label">Titre de la session (Optionnel)</label>
+                                <input type="text" class="form-control" id="sessionTitle" x-model="newSession.titre" placeholder="Ex: Évaluation mi-semestre...">
+                            </div>
+                             <div class="col-md-6 mb-3">
+                                <label for="sessionTeacher" class="form-label">Enseignant</label>
+                                <select class="form-select" id="sessionTeacher" x-model.number="newSession.enseignant_id" required>
+                                    <option value="">Sélectionner un enseignant</option>
+                                    <template x-for="teacher in teachers" :key="teacher.id">
+                                        <option :value="teacher.id" x-text="`${teacher.nom} ${teacher.prenom}`"></option>
+                                    </template>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="sessionDateEnd" class="form-label">Date de fin</label>
-                            <input type="date" class="form-control" id="sessionDateEnd" name="date_fermeture" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="sessionSubject" class="form-label">Matière</label>
+                                <select class="form-select" id="sessionSubject" x-model.number="newSession.matiere_id" required>
+                                    <option value="">Sélectionner une matière</option>
+                                    <template x-for="subject in subjects" :key="subject.id">
+                                        <option :value="subject.id" x-text="subject.libelle"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="sessionClass" class="form-label">Classe</label>
+                                <select class="form-select" id="sessionClass" x-model.number="newSession.classe_id" required>
+                                    <option value="">Sélectionner une classe</option>
+                                    <template x-for="classe in classes" :key="classe.id">
+                                        <option :value="classe.id" x-text="`${classe.nom} (${classe.niveaux?.libelle || 'Niveau non spécifié'})`"></option>
+                                    </template>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="sessionTeacher" class="form-label">Enseignant</label>
-                            <select class="form-select" id="sessionTeacher" required>
-                                <option value="">Sélectionner un enseignant</option>
-                                <template x-for="teacher in teachers" :key="teacher.id">
-                                    <option :value="teacher.id" x-text="teacher.nom"></option>
-                                </template>
-                            </select>
+                         <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="sessionAcademicYear" class="form-label">Année Académique</label>
+                                <select class="form-select" id="sessionAcademicYear" x-model.number="newSession.annee_academique_id" required>
+                                    <option value="">Sélectionner une année</option>
+                                    <template x-for="year in academicYears" :key="year.id">
+                                        <option :value="year.id" x-text="year.libelle"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="sessionSemester" class="form-label">Semestre</label>
+                                <select class="form-select" id="sessionSemester" x-model="newSession.semestre" required>
+                                    <option value="">Sélectionner un semestre</option>
+                                    <option value="S1">Semestre 1 (S1)</option>
+                                    <option value="S2">Semestre 2 (S2)</option>
+                                    <option value="Annuel">Annuel</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="sessionModule" class="form-label">Module</label>
-                            <input type="text" class="form-control" id="sessionModule" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="sessionDateStart" class="form-label">Date de début</label>
+                                <input type="date" class="form-control" id="sessionDateStart" x-model="newSession.date_ouverture" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="sessionDateEnd" class="form-label">Date de fin</label>
+                                <input type="date" class="form-control" id="sessionDateEnd" x-model="newSession.date_fermeture" required>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="sessionStatus" class="form-label">Statut</label>
-                            <select class="form-select" id="sessionStatus" required>
-                                <option value="pending">En attente</option>
-                                <option value="active">Active</option>
-                                <option value="completed">Terminée</option>
-                            </select>
-                        </div>
+                        <!-- Le statut est géré automatiquement (is_active, dates), donc pas de champ statut ici -->
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" @click="submitAddSession" data-bs-dismiss="modal">Créer</button>
+                    <button type="submit" form="addSessionForm" class="btn btn-primary">
+                         <span x-show="!isLoading"><i class="fas fa-plus me-1"></i>Créer la Session</span>
+                         <span x-show="isLoading"><i class="fas fa-spinner fa-spin me-1"></i>Création...</span>
+                    </button>
                 </div>
             </div>
         </div>
