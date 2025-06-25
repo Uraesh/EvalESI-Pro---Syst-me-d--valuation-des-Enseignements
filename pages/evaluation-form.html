@@ -10,6 +10,15 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Supabase Client & Form Logic -->
+    <script type="module" src="../assets/js/supabase-client.js"></script>
+    <script type="module" src="../assets/js/forms.js"></script>
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         :root {
             --esi-primary: #2563eb;
@@ -544,7 +553,7 @@
         }
     </style>
 </head>
-<body>
+<body x-data="evaluationForm()" x-init="init()">
     <div class="evaluation-container">
         <!-- Header -->
         <header class="evaluation-header">
@@ -552,30 +561,38 @@
                 <div class="header-info">
                     <h1>
                         <i class="fas fa-star me-2"></i>
-                        Évaluation de l'Enseignement
+                        <span x-text="isPreviewMode ? 'Prévisualisation Évaluation' : 'Évaluation de l\'Enseignement'"></span>
                     </h1>
-                    <div class="header-details" id="evaluationDetails">
+                    <div class="header-details">
                         <div class="header-detail">
                             <i class="fas fa-user"></i>
-                            <span id="teacherName">Chargement...</span>
+                            <span x-text="teacherName"></span>
                         </div>
                         <div class="header-detail">
                             <i class="fas fa-book"></i>
-                            <span id="subjectName">Chargement...</span>
+                            <span x-text="subjectName"></span>
+                        </div>
+                        <div class="header-detail">
+                            <i class="fas fa-university"></i>
+                            <span x-text="academicYear"></span>
                         </div>
                         <div class="header-detail">
                             <i class="fas fa-layer-group"></i>
-                            <span id="levelClass">Chargement...</span>
+                            <span x-text="className"></span>
+                        </div>
+                         <div class="header-detail">
+                            <i class="fas fa-hourglass-half"></i>
+                            <span x-text="semester"></span>
                         </div>
                     </div>
                 </div>
                 <div class="header-stats">
                     <div class="stat-card">
-                        <div class="stat-value" id="progressPercent">0%</div>
+                        <div class="stat-value" x-text="globalProgress + '%'"></div>
                         <div class="stat-label">Progression</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="currentAverage">0.0</div>
+                        <div class="stat-value" x-text="globalScore.toFixed(1)"></div>
                         <div class="stat-label">Moyenne</div>
                     </div>
                 </div>
@@ -583,29 +600,30 @@
         </header>
 
         <!-- Main Content -->
-        <main class="evaluation-content">
+        <main class="evaluation-content" x-show="!isLoading">
             <!-- Progress Section -->
             <div class="progress-section">
                 <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-fill" :style="`width: ${globalProgress}%`"></div>
                 </div>
                 <div class="progress-stats">
                     <div class="stat-card">
-                        <div class="stat-value" id="answeredCount">0</div>
+                        <div class="stat-value" x-text="evaluatedCriteria"></div>
                         <div class="stat-label">Réponses</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="totalCriteria">44</div>
+                        <div class="stat-value" x-text="getTotalCriteria()"></div>
                         <div class="stat-label">Critères</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="sectionsCount">7</div>
+                        <div class="stat-value" x-text="evaluationCriteria.sections.length"></div>
                         <div class="stat-label">Sections</div>
                     </div>
-                    <div class="stat-card">
+                    <!-- Le minuteur n'est pas implémenté dans la logique Alpine actuelle, donc commenté -->
+                    <!-- <div class="stat-card">
                         <div class="stat-value" id="timeElapsed">0:00</div>
                         <div class="stat-label">Temps écoulé</div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -636,393 +654,85 @@
             </div>
 
             <!-- Evaluation Form Container -->
-            <div id="evaluationForm">
-                <!-- Les sections seront générées dynamiquement -->
+            <div id="evaluationFormAlpine">
+                <template x-for="(section, sectionIndex) in evaluationCriteria.sections" :key="section.id">
+                    <div class="criteria-section" :id="`section-${section.id}`">
+                        <div class="section-header">
+                            <div class="section-icon"><i :class="section.icon || 'fas fa-question-circle'"></i></div>
+                            <div>
+                                <h2 class="section-title" x-text="section.title"></h2>
+                                <p class="section-subtitle"><span x-text="section.criteria.length"></span> critères à évaluer</p>
+                            </div>
+                        </div>
+                        <template x-for="(criterion, criterionIndex) in section.criteria" :key="criterion.id">
+                            <div class="criteria-item">
+                                <div class="criteria-text" x-text="criterion.text"></div>
+                                <div class="rating-buttons">
+                                    <template x-for="option in ratingOptions" :key="option.value">
+                                        <button class="rating-btn"
+                                                :class="{ 'selected': ratings[criterion.id] === option.value }"
+                                                @click="updateRating(criterion.id, option.value)"
+                                                :title="option.text"
+                                                x-text="option.value">
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        <div class="section-average">
+                            <span class="text-muted">Moyenne de cette section : </span>
+                            <span class="section-average-value" x-text="sectionAverages[sectionIndex] !== undefined ? sectionAverages[sectionIndex].toFixed(1) : '-'"></span>
+                        </div>
+                    </div>
+                </template>
+                 <!-- Champ de commentaire -->
+                <div class="criteria-section">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fas fa-comment-dots"></i></div>
+                        <div>
+                            <h2 class="section-title">Commentaires Supplémentaires</h2>
+                            <p class="section-subtitle">Vos remarques ou suggestions (optionnel)</p>
+                        </div>
+                    </div>
+                    <textarea class="form-control" rows="4" placeholder="Saisissez vos commentaires ici..." x-model="comments" style="background-color: var(--dark-surface); color: var(--dark-text); border-color: var(--dark-border);"></textarea>
+                </div>
             </div>
 
             <!-- Submit Section -->
             <div class="submit-section">
-                <button type="button" class="btn-submit" id="submitEvaluation" disabled>
-                    <i class="fas fa-paper-plane"></i>
-                    Soumettre l'évaluation
+                <button type="button" class="btn-submit" @click="submitEvaluation()" :disabled="isLoading || (evaluatedCriteria < getTotalCriteria() && !isPreviewMode)">
+                    <span x-show="isLoading"><i class="fas fa-spinner fa-spin me-2"></i>Soumission...</span>
+                    <span x-show="!isLoading">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        <span x-text="isPreviewMode ? 'Fermer l\'Aperçu' : 'Soumettre l\'évaluation'"></span>
+                    </span>
                 </button>
-                <div class="completion-message" id="completionMessage">
+                <div class="completion-message" x-show="!isPreviewMode && evaluatedCriteria === getTotalCriteria()">
                     <i class="fas fa-check-circle me-2"></i>
                     Parfait ! Vous avez répondu à tous les critères. Vous pouvez maintenant soumettre votre évaluation.
                 </div>
-                <div class="mt-3">
+                 <div class="completion-message" x-show="isPreviewMode" style="background-color: rgba(59, 130, 246, 0.1); border-color: var(--esi-accent); color: var(--esi-accent);">
+                    <i class="fas fa-eye me-2"></i>
+                    Ceci est un aperçu. Aucune donnée ne sera enregistrée.
+                </div>
+                <div class="mt-3" x-show="!isPreviewMode">
                     <small class="text-muted">
                         <i class="fas fa-lock me-1"></i>
-                        Vos réponses sont anonymes et confidentielles
+                        Vos réponses sont anonymes et confidentielles.
                     </small>
                 </div>
             </div>
         </main>
     </div>
-    <!-- Success Modal -->
+    <!-- Le Success Modal n'est plus nécessaire ici si Swal est utilisé dans forms.js -->
+    <!--
     <div class="success-modal" id="successModal" role="dialog" aria-labelledby="successTitle" aria-describedby="successMessage">
-        <div class="success-content">
-            <div class="success-icon" aria-hidden="true">
-                <i class="fas fa-check"></i>
-            </div>
-            <h2 class="success-title" id="successTitle">Évaluation soumise avec succès !</h2>
-            <p class="success-message" id="successMessage">
-                Merci pour votre participation. Vos commentaires sont précieux pour améliorer la qualité de l'enseignement.
-            </p>
-            <button class="btn-submit" onclick="window.close()" aria-label="Fermer la fenêtre">
-                <i class="fas fa-home me-2" aria-hidden="true"></i>
-                Fermer
-            </button>
-        </div>
+        ...
     </div>
+    -->
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        // Données des critères d'évaluation
-        const evaluationCriteria = {
-            "Intérêt de l'enseignant pour son cours": {
-                icon: "fas fa-heart",
-                criteria: [
-                    "Cherche à donner l'envie d'apprendre",
-                    "Fait preuve d'humour",
-                    "Utilise différents supports pédagogiques",
-                    "Lit ses notes ou un document écrit",
-                    "Suggère des implications pratiques",
-                    "Donne son point de vue personnel",
-                    "Fait preuve de conviction dans son cours",
-                    "Montre de l'intérêt et de l'enthousiasme"
-                ]
-            },
-            "Clarté du cours": {
-                icon: "fas fa-lightbulb",
-                criteria: [
-                    "Utilise un débit de parole approprié",
-                    "Parle d'une voix non monotone",
-                    "S'exprime clairement",
-                    "Avance dans son cours à une vitesse mesurée"
-                ]
-            },
-            "Relations avec les apprenants": {
-                icon: "fas fa-users",
-                criteria: [
-                    "Montre de l'intérêt pour les apprenants",
-                    "Accepte les points de vue divergents",
-                    "Apporte de l'aide en cas d'incompréhension",
-                    "Montre du respect envers les apprenants",
-                    "Est d'un contact facile (est disponible)",
-                    "Maintien de la discipline dans la classe",
-                    "Tolère les retards aux cours",
-                    "Sanctionne les absences non justifiées au cours précédent"
-                ]
-            },
-            "Organisation du cours": {
-                icon: "fas fa-clipboard-list",
-                criteria: [
-                    "Présente les objectifs du cours à atteindre",
-                    "Dispense le cours de manière organisée",
-                    "Donne des documents de travail",
-                    "Fait des transitions logiques entre les compétences à acquérir",
-                    "Fait des synthèses utiles lors de son cours",
-                    "Fait preuve de rigueur dans ses horaires de cours (du début et de la fin)"
-                ]
-            },
-            "Incitation à la participation": {
-                icon: "fas fa-comments",
-                criteria: [
-                    "Encourage les questions et les commentaires",
-                    "Interroge individuellement les apprenants",
-                    "Pose des questions à la classe entière",
-                    "Incite les apprenants à interagir",
-                    "Pose des questions complexes",
-                    "Crée dans la classe une ambiance à la fois animée et ordonnée",
-                    "Maintien en éveil de l'attention des apprenants"
-                ]
-            },
-            "Explications": {
-                icon: "fas fa-chalkboard-teacher",
-                criteria: [
-                    "Utilise des explications",
-                    "Répète ce qui est difficile",
-                    "Souligne les points centraux",
-                    "Donne des détails",
-                    "Identifie les points clés",
-                    "Donne des travaux de maison pour la compréhension du cours",
-                    "Fait des corrections ponctuelles des devoirs et travaux rendus par les apprenants"
-                ]
-            },
-            "Attitude des apprenants (Auto-perception)": {
-                icon: "fas fa-user-graduate",
-                criteria: [
-                    "Sont attentifs et appliqués",
-                    "Participent activement aux cours",
-                    "Respectent l'enseignant(e)",
-                    "Sont motivés par le cours"
-                ]
-            }
-        };
-
-        // Variables globales
-        let currentResponses = {};
-        let totalQuestions = 44;
-        let startTime = Date.now();
-        let timeInterval;
-
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
-            loadEvaluationInfo();
-            generateEvaluationForm();
-            startTimer();
-            
-            // Ajouter l'écouteur pour le bouton de soumission
-            document.getElementById('submitEvaluation').addEventListener('click', submitEvaluation);
-        });
-
-        function loadEvaluationInfo() {
-            // Récupérer les paramètres de l'URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const teacher = urlParams.get('teacher') || 'Enseignant non spécifié';
-            const subject = urlParams.get('subject') || 'Matière non spécifiée';
-            const level = urlParams.get('level') || '';
-            const className = urlParams.get('class') || '';
-
-            // Mettre à jour l'en-tête avec des messages de feedback
-            const teacherElement = document.getElementById('teacherName');
-            const subjectElement = document.getElementById('subjectName');
-            const levelElement = document.getElementById('levelClass');
-
-            teacherElement.textContent = 'Chargement des informations...';
-            subjectElement.textContent = 'Chargement des informations...';
-            levelElement.textContent = 'Chargement des informations...';
-
-            // Simuler un délai de chargement (à remplacer par votre logique réelle)
-            setTimeout(() => {
-                teacherElement.textContent = teacher;
-                subjectElement.textContent = subject;
-                levelElement.textContent = `${level} ${className}`;
-            }, 500);
-
-            // Mettre à jour le titre de la page
-            document.title = `Évaluation - ${teacher} - ${subject}`;
-        }
-
-        function generateEvaluationForm() {
-            const formContainer = document.getElementById('evaluationForm');
-            formContainer.innerHTML = '';
-
-            Object.entries(evaluationCriteria).forEach(([sectionName, sectionData], sectionIndex) => {
-                const sectionDiv = document.createElement('div');
-                sectionDiv.className = 'criteria-section';
-                sectionDiv.id = `section-${sectionIndex}`;
-
-                // En-tête de la section
-                const sectionHeader = document.createElement('div');
-                sectionHeader.className = 'section-header';
-                sectionHeader.innerHTML = `
-                    <div class="section-icon">
-                        <i class="${sectionData.icon}"></i>
-                    </div>
-                    <div>
-                        <h2 class="section-title">${sectionName}</h2>
-                        <p class="section-subtitle">${sectionData.criteria.length} critères à évaluer</p>
-                    </div>
-                `;
-                sectionDiv.appendChild(sectionHeader);
-
-                // Critères de la section
-                sectionData.criteria.forEach((criterion, criterionIndex) => {
-                    const criteriaItem = document.createElement('div');
-                    criteriaItem.className = 'criteria-item';
-                    criteriaItem.innerHTML = `
-                        <div class="criteria-text">${criterion}</div>
-                        <div class="rating-buttons">
-                            <button class="rating-btn" data-rating="20" 
-                                    data-section="${sectionIndex}" 
-                                    data-criterion="${criterionIndex}"
-                                    title="Toujours">
-                                20
-                            </button>
-                            <button class="rating-btn" data-rating="10" 
-                                    data-section="${sectionIndex}" 
-                                    data-criterion="${criterionIndex}"
-                                    title="Souvent">
-                                10
-                            </button>
-                            <button class="rating-btn" data-rating="5" 
-                                    data-section="${sectionIndex}" 
-                                    data-criterion="${criterionIndex}"
-                                    title="Rarement">
-                                5
-                            </button>
-                            <button class="rating-btn" data-rating="0" 
-                                    data-section="${sectionIndex}" 
-                                    data-criterion="${criterionIndex}"
-                                    title="Jamais">
-                                0
-                            </button>
-                        </div>
-                    `;
-                    sectionDiv.appendChild(criteriaItem);
-                });
-
-                // Moyenne de la section
-                const sectionAverage = document.createElement('div');
-                sectionAverage.className = 'section-average';
-                sectionAverage.innerHTML = `
-                    <span class="text-muted">Moyenne de cette section : </span>
-                    <span class="section-average-value" id="section-${sectionIndex}-average">0.0</span>
-                `;
-                sectionDiv.appendChild(sectionAverage);
-
-                formContainer.appendChild(sectionDiv);
-            });
-
-            // Ajouter les écouteurs d'événements
-            document.querySelectorAll('.rating-btn').forEach(btn => {
-                btn.addEventListener('click', handleRatingClick);
-            });
-        }
-
-        function getRatingLabel(rating) {
-            const labels = {
-                20: "Toujours",
-                10: "Souvent",
-                5: "Rarement",
-                0: "Jamais"
-            };
-            return labels[rating] || "";
-        }
-
-        function handleRatingClick(event) {
-            const button = event.target;
-            const rating = parseInt(button.dataset.rating);
-            const section = button.dataset.section;
-            const criterion = button.dataset.criterion;
-
-            // Mettre à jour l'apparence des boutons
-            const buttons = button.parentElement.querySelectorAll('.rating-btn');
-            buttons.forEach(btn => btn.classList.remove('selected'));
-            button.classList.add('selected');
-
-            // Annoncer le changement pour les lecteurs d'écran
-            const ratingLabel = getRatingLabel(rating);
-            const criterionText = button.closest('.criteria-item').querySelector('.criteria-text').textContent;
-            const announcement = document.createElement('div');
-            announcement.setAttribute('aria-live', 'polite');
-            announcement.setAttribute('class', 'sr-only');
-            announcement.textContent = `${criterionText} : ${ratingLabel}`;
-            document.body.appendChild(announcement);
-            setTimeout(() => announcement.remove(), 1000);
-
-            // Stocker la réponse
-            if (!currentResponses[section]) {
-                currentResponses[section] = {};
-            }
-            currentResponses[section][criterion] = rating;
-
-            // Mettre à jour les statistiques
-            updateStats();
-        }
-
-        function updateStats() {
-            const totalAnswered = Object.values(currentResponses).reduce((sum, section) => 
-                sum + Object.keys(section).length, 0);
-            
-            const progress = (totalAnswered / totalQuestions) * 100;
-            document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
-            document.getElementById('progressFill').style.width = `${progress}%`;
-            document.getElementById('answeredCount').textContent = totalAnswered;
-
-            // Calculer la moyenne globale
-            let totalScore = 0;
-            let totalResponses = 0;
-
-            Object.entries(currentResponses).forEach(([section, responses]) => {
-                const sectionScores = Object.values(responses);
-                const sectionTotal = sectionScores.reduce((sum, score) => sum + score, 0);
-                const sectionAverage = sectionScores.length > 0 ? sectionTotal / sectionScores.length : 0;
-                
-                // Mettre à jour la moyenne de la section
-                document.getElementById(`section-${section}-average`).textContent = 
-                    sectionAverage.toFixed(1);
-
-                totalScore += sectionTotal;
-                totalResponses += sectionScores.length;
-            });
-
-            const globalAverage = totalResponses > 0 ? totalScore / totalResponses : 0;
-            document.getElementById('currentAverage').textContent = globalAverage.toFixed(1);
-
-            // Activer/désactiver le bouton de soumission
-            const submitButton = document.getElementById('submitEvaluation');
-            const completionMessage = document.getElementById('completionMessage');
-            
-            if (totalAnswered === totalQuestions) {
-                submitButton.disabled = false;
-                completionMessage.style.display = 'block';
-            } else {
-                submitButton.disabled = true;
-                completionMessage.style.display = 'none';
-            }
-        }
-
-        function submitEvaluation() {
-            const submitButton = document.getElementById('submitEvaluation');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Soumission en cours...';
-
-            // Simuler un délai de soumission (à remplacer par votre logique réelle)
-            setTimeout(() => {
-                // Calculer la moyenne finale
-                let totalScore = 0;
-                let totalResponses = 0;
-
-                Object.values(currentResponses).forEach(section => {
-                    Object.values(section).forEach(score => {
-                        totalScore += score;
-                        totalResponses++;
-                    });
-                });
-
-                const finalAverage = totalResponses > 0 ? totalScore / totalResponses : 0;
-
-                // Afficher le modal de succès avec la moyenne
-                const successModal = document.getElementById('successModal');
-                const successMessage = successModal.querySelector('.success-message');
-                successMessage.innerHTML = `
-                    Merci pour votre participation. Vos commentaires sont précieux pour améliorer la qualité de l'enseignement.<br>
-                    <strong>Note finale : ${finalAverage.toFixed(1)}/20</strong>
-                `;
-                successModal.style.display = 'flex';
-
-                // Envoyer les données à Supabase
-                const evaluationData = {
-                    teacher: document.getElementById('teacherName').textContent,
-                    subject: document.getElementById('subjectName').textContent,
-                    level: document.getElementById('levelClass').textContent,
-                    responses: currentResponses,
-                    average: finalAverage,
-                    timestamp: new Date().toISOString()
-                };
-
-                // TODO: Implémenter l'envoi à Supabase
-                console.log('Données d\'évaluation:', evaluationData);
-            }, 1000);
-        }
-
-        function startTimer() {
-            startTime = Date.now();
-            timeInterval = setInterval(updateTimer, 1000);
-        }
-
-        function updateTimer() {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            document.getElementById('timeElapsed').textContent = 
-                `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-    </script>
+    <!-- Scripts (Alpine, Supabase, Forms sont déjà inclus dans le head) -->
+    <!-- Le script vanilla ci-dessous est supprimé car la logique est dans forms.js (Alpine) -->
+    <!-- <script> ... </script> -->
 </body>
 </html>

@@ -91,19 +91,32 @@ const evaluationCriteria = {
     ]
 };
 
+// Importer getSupabaseClient et initSupabaseClient si ce fichier est utilisé comme un module et a besoin d'initialiser/accéder à Supabase.
+// Cependant, pour l'instant, `forms.js` semble définir `evaluationCriteria` et la fonction `evaluationForm`
+// qui sera utilisée par `Alpine.data` dans `evaluation-form.html`.
+// `supabaseClient` et `isDevMode` sont utilisés mais non définis/importés ici.
+// Supposons qu'ils sont globaux ou que `evaluation-form.html` les gère.
+// Pour une meilleure modularité, ce fichier devrait aussi importer `getSupabaseClient`.
+
+// Pour l'instant, nous allons nous concentrer sur la logique de prévisualisation.
+
 // Fonction Alpine.js pour le formulaire d'évaluation
 function evaluationForm() {
     return {
         // État initial
         teacherName: 'Chargement...',
         subjectName: 'Chargement...',
-        className: 'Chargement...',
+        className: 'Chargement...', // Pourrait être 'levelName' ou 'className' selon ce qu'on veut afficher
+        academicYear: 'Chargement...',
         semester: 'Chargement...',
+        isPreviewMode: false, // Nouveau pour gérer le mode prévisualisation
+        isLoading: true, // Pour gérer l'état de chargement initial
+
         globalProgress: 0,
         evaluatedCriteria: 0,
         globalScore: 0,
-        sectionAverages: Array(7).fill('-'),
-        criteria: evaluationCriteria.sections.map(section => section.criteria),
+        sectionAverages: Array(evaluationCriteria.sections.length).fill('-'), // Dynamiser la taille
+        criteria: evaluationCriteria.sections.map(section => section.criteria), // Garder cette structure
         ratings: {},
         comments: '',
         
@@ -112,15 +125,117 @@ function evaluationForm() {
             { value: 0, text: 'Jamais' },
             { value: 5, text: 'Rarement' },
             { value: 10, text: 'Souvent' },
-            { value: 20, text: 'Toujours' }
+            { value: 20, text: 'Toujours' } // Note: L'échelle de 0 à 20 est inhabituelle, souvent c'est 1-5 ou 1-10.
         ],
 
         // Initialisation
-        init() {
-            this.loadEvaluationData();
+        async init() {
+            this.isLoading = true;
+            // `evaluationCriteria` est défini globalement dans ce fichier.
+            // `initializeRatings` peut être appelé directement.
             this.initializeRatings();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('preview') && urlParams.get('preview') === 'true') {
+                this.isPreviewMode = true;
+                this.loadPreviewData();
+            } else {
+                this.isPreviewMode = false;
+                // Assumant que `supabaseClient` est disponible globalement ou via une initialisation externe
+                // et que `initSupabaseClient` a été appelé.
+                // Pour plus de propreté, on devrait l'importer et l'initialiser.
+                // Pour l'instant, on se base sur l'existant.
+                if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+                     await this.loadRealEvaluationData(urlParams.get('token'));
+                } else if (typeof getSupabaseClient !== 'undefined') {
+                    const supabase = getSupabaseClient();
+                    if (supabase) {
+                        await this.loadRealEvaluationData(urlParams.get('token'), supabase);
+                    } else {
+                         console.error("Supabase client non disponible dans evaluationForm.init");
+                         this.showError("Erreur de configuration : client de base de données non prêt.");
+                    }
+                } else {
+                    console.error("Supabase client (ou getSupabaseClient) non défini globalement.");
+                    this.showError("Erreur critique de configuration de l'application.");
+                }
+            }
+            this.isLoading = false;
             console.log('Total critères configurés:', this.getTotalCriteria());
+            console.log('Mode Aperçu:', this.isPreviewMode);
         },
+
+        loadPreviewData() {
+            const data = JSON.parse(sessionStorage.getItem('evaluationPreviewData'));
+            if (data) {
+                this.teacherName = data.teacherName || 'N/A';
+                this.subjectName = data.subjectName || 'N/A';
+                this.className = data.className || 'N/A'; // ou levelName
+                this.academicYear = data.academicYear || 'N/A';
+                this.semester = data.semester || 'N/A';
+                // Les autres champs comme globalProgress, ratings, etc., restent à leurs valeurs initiales pour un aperçu propre.
+            } else {
+                this.showError("Données de prévisualisation introuvables. Veuillez réessayer depuis la page de création.");
+                // Peut-être rediriger ou afficher un message plus permanent.
+            }
+            this.isLoading = false;
+        },
+
+        // Renommé et adapté pour prendre le client supabase en argument si nécessaire
+        async loadRealEvaluationData(token, supabaseInstance) {
+            const supabase = supabaseInstance || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+            if (!supabase) {
+                this.showError("Client Supabase non configuré pour charger les données réelles.");
+                this.isLoading = false;
+                return;
+            }
+             if (!token) {
+                this.showError("Token de session manquant pour charger l'évaluation.");
+                if (!this.isPreviewMode) window.location.href = '/'; // Rediriger si pas en preview et pas de token
+                this.isLoading = false;
+                return;
+            }
+
+            try {
+                // Utiliser la méthode getSessionByToken du client Supabase
+                // La gestion isDevMode est dans supabase-client.js
+                const session = await supabase.getSessionByToken(token);
+                if (!session || !session.enseignements) {
+                     throw new Error('Session invalide ou données de session incomplètes.');
+                }
+
+                // Vérifier si la session est toujours active (date_fermeture)
+                const now = new Date();
+                const dateFermeture = new Date(session.date_fermeture);
+                if (now > dateFermeture) {
+                    this.showError('Cette session d\'évaluation est terminée.');
+                    // Optionnel: rediriger ou bloquer le formulaire
+                    // Pour l'instant, on affiche juste les infos mais la soumission échouera si on garde la logique.
+                    // Idéalement, la page de soumission ne devrait même pas se charger ou le formulaire être désactivé.
+                }
+
+                this.teacherName = `${session.enseignements.enseignants.nom} ${session.enseignements.enseignants.prenom}`;
+                this.subjectName = session.enseignements.matieres.libelle;
+                // Afficher le nom de la classe et le niveau si disponible
+                let classeDisplay = session.enseignements.classes.nom;
+                if (session.enseignements.classes.niveaux && session.enseignements.classes.niveaux.libelle) {
+                    classeDisplay += ` (${session.enseignements.classes.niveaux.libelle})`;
+                }
+                this.className = classeDisplay;
+                this.semester = session.enseignements.semestre || 'Non spécifié';
+                // academicYear n'est pas directement dans la session retournée par getSessionByToken,
+                // il faudrait l'ajouter à la requête dans supabase-client.js si nécessaire.
+                // Pour l'instant, on le laisse vide ou on le récupère autrement si besoin.
+                this.academicYear = session.enseignements.annee_academique?.libelle || 'Année non spécifiée';
+
+
+            } catch (error) {
+                console.error("Erreur chargement données d'évaluation réelles:", error);
+                this.showError(`Erreur: ${error.message || 'Session invalide ou fermée.'}`);
+                if (!this.isPreviewMode) window.location.href = '/'; // Rediriger si erreur critique et pas en preview
+            }
+        },
+
 
         // Obtenir le nombre total de critères
         getTotalCriteria() {
@@ -129,44 +244,16 @@ function evaluationForm() {
             }, 0);
         },
 
-        // Nettoyage des sessions d'évaluation temporaire
-        async cleanupPreviewSessions() {
-            await getSupabaseClient()
-                .from('sessions_evaluation')
-                .delete()
-                .eq('is_preview', true)
-                .lt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-        },
-
-        // Les liens publics (lien_public dans sessions_evaluation) sont accessibles à tous. Ajoute une vérification côté client pour s'assurer que la session est ouverte :
-        async loadEvaluationData() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-            try {
-                if (isDevMode) {
-                    const session = window.mockData?.data?.sessions?.find(s => s.token === token);
-                    if (!session) throw new Error('Session introuvable');
-                    this.teacherName = `${session.enseignements.enseignants.nom} ${session.enseignements.enseignants.prenom}`;
-                    this.subjectName = session.enseignements.matieres.libelle;
-                    this.className = session.enseignements.classes.nom;
-                    this.semester = session.enseignements.semestre || 'Non spécifié';
-                } else {
-                    const session = await supabaseClient.getSessionByToken(token);
-                    this.teacherName = `${session.enseignements.enseignants.nom} ${session.enseignements.enseignants.prenom}`;
-                    this.subjectName = session.enseignements.matieres.libelle;
-                    this.className = session.enseignements.classes.nom;
-                    this.semester = session.enseignements.semestre || 'Non spécifié';
-                }
-            } catch (error) {
-                swal.fire({
-                    icon: 'error',
-                    title: 'Erreur',
-                    text: 'Session invalide ou fermée',
-                    confirmButtonColor: '#0066cc'
-                });
-                window.location.href = '/';
-            }
-        },
+        // Nettoyage des sessions d'évaluation temporaire (si pertinent, sinon à retirer)
+        // async cleanupPreviewSessions() {
+        //     const supabase = getSupabaseClient();
+        //     if (!supabase) return;
+        //     await supabase
+        //         .from('sessions_evaluation')
+        //         .delete()
+        //         .eq('is_preview', true) // Assurez-vous que cette colonne existe ou que la logique est adaptée
+        //         .lt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+        // },
 
         // Initialisation des ratings
         initializeRatings() {
@@ -244,36 +331,101 @@ function evaluationForm() {
 
         // Soumission du formulaire
         async submitEvaluation() {
-            if (this.evaluatedCriteria < this.getTotalCriteria()) {
-                alert(`Veuillez évaluer tous les critères avant de soumettre le formulaire. (${this.evaluatedCriteria}/${this.getTotalCriteria()} complétés)`);
+            if (this.isPreviewMode) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Mode Prévisualisation',
+                    text: 'Ceci est un aperçu. Les réponses ne seront pas soumises.',
+                    confirmButtonColor: '#0066cc'
+                });
                 return;
             }
+
+            if (this.evaluatedCriteria < this.getTotalCriteria()) {
+                // Remplacer alert par Swal pour la cohérence
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Formulaire Incomplet',
+                    text: `Veuillez évaluer tous les critères avant de soumettre. (${this.evaluatedCriteria}/${this.getTotalCriteria()} complétés)`,
+                    confirmButtonColor: '#0066cc'
+                });
+                return;
+            }
+
+            this.isLoading = true; // Indiquer le chargement pendant la soumission
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const token = urlParams.get('token');
-                const session = await supabaseClient.getSessionByToken(token);
+
+                // Récupérer l'instance supabase client
+                const supabase = getSupabaseClient();
+                if (!supabase) {
+                    this.showError("Client Supabase non disponible pour la soumission.");
+                    this.isLoading = false;
+                    return;
+                }
+
+                // Pas besoin de re-récupérer la session ici si session.id est déjà stocké,
+                // mais getSessionByToken pourrait revalider le token, ce qui est bien.
+                // Cependant, submitEvaluation dans supabase-client.js prend déjà session_id.
+                // Nous avons besoin du session_id. Si nous ne l'avons pas stocké, nous devons le récupérer.
+                // Pour l'instant, on suppose que `getSessionByToken` est nécessaire pour obtenir `session.id` si on ne l'a pas.
+                // Ou mieux, `submitEvaluation` devrait juste prendre le token et gérer la recherche de session_id.
+                // Pour l'instant, on va chercher la session pour avoir son ID.
+                const session = await supabase.getSessionByToken(token);
+                if (!session) {
+                    this.showError("Session d'évaluation non trouvée ou invalide pour la soumission.");
+                    this.isLoading = false;
+                    return;
+                }
+
                 const evaluationData = {
-                    session_id: session.id,
+                    session_id: session.id, // ID de la session d'évaluation
                     reponses: this.ratings,
-                    commentaire: this.comments
+                    commentaire: this.comments.trim()
                 };
-                const { success, reponse_id } = await supabaseClient.submitEvaluation(
+
+                // La méthode submitEvaluation de supabase-client.js gère la logique d'insertion
+                const { success, reponse_id, error } = await supabase.submitEvaluation(
                     evaluationData.session_id,
                     evaluationData.reponses,
                     evaluationData.commentaire
+                    // fingerprint peut être ajouté ici si implémenté
                 );
+
                 if (success) {
+                    // Redirection vers une page de remerciement
                     window.location.href = '/pages/thank-you.html';
+                } else {
+                    throw error || new Error("La soumission de l'évaluation a échoué.");
                 }
             } catch (error) {
                 console.error('Erreur lors de la soumission:', error);
-                alert('Une erreur est survenue lors de la soumission. Veuillez réessayer.');
+                this.showError(`Erreur de soumission: ${error.message || 'Veuillez réessayer.'}`);
+            } finally {
+                this.isLoading = false;
             }
         },
 
-        async previewEvaluation() {
-            const errors = [];
-            if (!this.selectedTeacher) errors.push('Enseignant requis');
+        // La méthode previewEvaluation n'a pas sa place ici, elle est pour create-evaluation.js
+        // async previewEvaluation() {
+        //     const errors = [];
+        //     if (!this.selectedTeacher) errors.push('Enseignant requis');
+        // ...
+        // }
+
+        // Ajouter une méthode showError si elle n'est pas déjà globale ou héritée
+        showError(message) {
+            console.error("EvaluationForm Error:", message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: message,
+                confirmButtonColor: '#0066cc'
+            });
+        }
+    };
+}
             if (!this.selectedSubject) errors.push('Matière requise');
             if (!this.selectedClass) errors.push('Classe requise');
             if (!this.selectedAcademicYear) errors.push('Année académique requise');

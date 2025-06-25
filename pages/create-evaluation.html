@@ -149,101 +149,103 @@
                             </div>
                         </div>
 
-                        <form id="evaluationConfigForm" role="form" aria-labelledby="formTitle">
+                        <form id="evaluationConfigForm" @submit.prevent="generateLink()" role="form" aria-labelledby="formTitle">
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="teacherName" placeholder="Nom de l'enseignant" required
-                                            aria-label="Nom de l'enseignant"
-                                            aria-required="true">
-                                        <label for="teacherName">
-                                            <i class="fas fa-user me-2" aria-hidden="true"></i>Nom de l'enseignant
-                                        </label>
-                                    </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="configTeacherId" class="form-label"><i class="fas fa-user me-2"></i>Enseignant</label>
+                                    <select class="form-select" id="configTeacherId" x-model="configTeacherId" required>
+                                        <option value="">Sélectionner un enseignant</option>
+                                        <template x-for="teacher in teachers" :key="teacher.id">
+                                            <option :value="teacher.id" x-text="`${teacher.nom} ${teacher.prenom}`"></option>
+                                        </template>
+                                    </select>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="subject" placeholder="Matière" required
-                                            aria-label="Matière dispensée"
-                                            aria-required="true">
-                                        <label for="subject">
-                                            <i class="fas fa-book me-2" aria-hidden="true"></i>Matière dispensée
-                                        </label>
-                                    </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="configSubjectId" class="form-label"><i class="fas fa-book me-2"></i>Matière</label>
+                                    <select class="form-select" id="configSubjectId" x-model="configSubjectId" required>
+                                        <option value="">Sélectionner une matière</option>
+                                        <template x-for="subject in subjects" :key="subject.id">
+                                            <option :value="subject.id" x-text="subject.libelle"></option>
+                                        </template>
+                                    </select>
                                 </div>
                             </div>
 
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <select class="form-control" id="level" required
-                                            aria-label="Niveau d'étude"
-                                            aria-required="true">
-                                            <option value="">Sélectionner le niveau</option>
-                                            <option value="L1">Licence 1 (L1)</option>
-                                            <option value="L2">Licence 2 (L2)</option>
-                                            <option value="L3">Licence 3 (L3)</option>
-                                            <option value="M1">Master 1 (M1)</option>
-                                            <option value="M2">Master 2 (M2)</option>
-                                        </select>
-                                        <label for="level">
-                                            <i class="fas fa-layer-group me-2" aria-hidden="true"></i>Niveau d'étude
-                                        </label>
-                                    </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="configClassId" class="form-label"><i class="fas fa-users me-2"></i>Classe</label>
+                                    <select class="form-select" id="configClassId" x-model="configClassId" required>
+                                        <option value="">Sélectionner une classe</option>
+                                        <template x-for="classe in classes" :key="classe.id">
+                                            <option :value="classe.id" x-text="classe.nom"></option>
+                                        </template>
+                                    </select>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="className" placeholder="Classe" required
-                                            aria-label="Classe concernée"
-                                            aria-required="true">
-                                        <label for="className">
-                                            <i class="fas fa-users me-2" aria-hidden="true"></i>Classe concernée
-                                        </label>
-                                    </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="configLevelId" class="form-label"><i class="fas fa-layer-group me-2"></i>Niveau (informatif, basé sur la classe)</label>
+                                    <!-- Ce champ pourrait être auto-rempli ou un simple input si le niveau n'est pas un ID séparé -->
+                                    <input type="text" class="form-control" id="configLevelId" x-model="configLevelId" placeholder="Ex: L1, M2...">
                                 </div>
                             </div>
 
-                            <div class="action-buttons mt-4">
-                                <button type="button" class="btn-primary" id="generateLinkBtn"
-                                    aria-label="Générer le lien du formulaire"
-                                    aria-describedby="generateLinkDesc">
-                                    <i class="fas fa-link me-2" aria-hidden="true"></i>
-                                    Générer le lien du formulaire
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="configAcademicYearId" class="form-label"><i class="fas fa-calendar-alt me-2"></i>Année Académique</label>
+                                    <select class="form-select" id="configAcademicYearId" x-model="configAcademicYearId" required>
+                                        <option value="">Sélectionner une année</option>
+                                        <template x-for="year in academicYears" :key="year.id">
+                                            <option :value="year.id" x-text="year.libelle"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="configSemester" class="form-label"><i class="fas fa-hourglass-half me-2"></i>Semestre</label>
+                                    <select class="form-select" id="configSemester" x-model="configSemester" required>
+                                        <option value="">Sélectionner un semestre</option>
+                                        <option value="S1">Semestre 1 (S1)</option>
+                                        <option value="S2">Semestre 2 (S2)</option>
+                                        <option value="Annuel">Annuel</option>
+                                    </select>
+                                </div>
+                            </div>
+                             <div class="mb-3">
+                                <label for="configTitle" class="form-label"><i class="fas fa-heading me-2"></i>Titre de l'évaluation (Optionnel)</label>
+                                <input type="text" class="form-control" id="configTitle" x-model="configTitle" placeholder="Ex: Évaluation Mi-Semestre...">
+                            </div>
+
+                            <div class="action-buttons mt-4 d-flex justify-content-between">
+                                <button type="button" class="btn-secondary" @click="previewEvaluationForm()">
+                                    <i class="fas fa-eye me-2"></i>Prévisualiser le Formulaire
                                 </button>
-                                <span id="generateLinkDesc" class="visually-hidden">Cliquez pour générer un lien unique pour cette évaluation</span>
+                                <button type="submit" class="btn-primary" :disabled="isLoading">
+                                    <span x-show="!isLoading"><i class="fas fa-link me-2"></i>Générer le Lien</span>
+                                    <span x-show="isLoading"><i class="fas fa-spinner fa-spin me-2"></i>Génération...</span>
+                                </button>
                             </div>
                         </form>
 
                         <!-- Zone d'affichage du lien généré -->
-                        <div id="linkSection" class="link-generated" style="display: none;" role="region" aria-labelledby="linkSectionTitle">
+                        <div x-show="isLinkGenerated && generatedLinkDisplay" class="link-generated mt-4" role="region" aria-labelledby="linkSectionTitle">
                             <div class="d-flex align-items-center mb-3">
                                 <i class="fas fa-check-circle text-success me-2" aria-hidden="true"></i>
-                                <h5 class="mb-0 text-success" id="linkSectionTitle">Lien d'évaluation généré avec succès !</h5>
+                                <h5 class="mb-0 text-success" id="linkSectionTitle">Lien d'évaluation généré !</h5>
                             </div>
-                            <p class="text-muted mb-2">Partagez ce lien avec les étudiants de la classe concernée :</p>
-                            <div class="link-display" id="generatedLink" role="textbox" aria-readonly="true" aria-label="Lien généré"></div>
-                            <div class="d-flex gap-2">
-                                <button class="btn-secondary" id="copyLinkBtn"
-                                    aria-label="Copier le lien"
-                                    aria-describedby="copyLinkDesc">
-                                    <i class="fas fa-copy me-2" aria-hidden="true"></i>Copier le lien
+                            <p class="text-muted mb-2">Partagez ce lien avec les étudiants :</p>
+                            <div class="link-display bg-dark p-3 rounded font-monospace" x-text="generatedLinkDisplay" aria-label="Lien généré"></div>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn-secondary btn-sm" @click="navigator.clipboard.writeText(generatedLinkDisplay).then(() => showSuccess('Lien copié !')).catch(err => showError('Erreur copie lien'))">
+                                    <i class="fas fa-copy me-2"></i>Copier
                                 </button>
-                                <span id="copyLinkDesc" class="visually-hidden">Cliquez pour copier le lien dans le presse-papiers</span>
-                                <button class="btn-secondary" id="sendEmailBtn"
-                                    aria-label="Envoyer par email"
-                                    aria-describedby="sendEmailDesc">
-                                    <i class="fas fa-envelope me-2" aria-hidden="true"></i>Envoyer par email
-                                </button>
-                                <span id="sendEmailDesc" class="visually-hidden">Cliquez pour envoyer le lien par email</span>
-                            </div>
-                            <div id="copyFeedback" class="copy-feedback" role="alert" aria-live="polite" style="display: none;">
-                                Lien copié avec succès !
+                                <!-- L'envoi par email nécessiterait une intégration backend ou un client mailto -->
+                                <a :href="`mailto:?subject=Lien Évaluation EvalESI Pro&body=Voici le lien pour l'évaluation: ${generatedLinkDisplay}`" class="btn-secondary btn-sm">
+                                    <i class="fas fa-envelope me-2"></i>Envoyer par Email
+                                </a>
                             </div>
                         </div>
                     </div>
 
                     <!-- Instructions -->
-                    <div class="dashboard-card animate-slide-up">
+                    <div class="dashboard-card animate-slide-up mt-4">
                         <div class="card-header">
                             <h4 class="card-title">
                                 <i class="fas fa-info-circle me-2"></i>
@@ -288,12 +290,25 @@
     </div>
 
     <!-- Bouton Flottant pour Prévisualiser le Formulaire -->
-    <button class="floating-btn" id="previewBtn" @click="previewEvaluation" title="Prévisualiser le formulaire d'évaluation">
+    <!-- Ce bouton flottant n'est plus nécessaire si la prévisualisation est un bouton standard du formulaire -->
+    <!-- <button class="floating-btn" id="previewBtn" @click="previewEvaluationForm()" title="Prévisualiser le formulaire d'évaluation">
         <i class="fas fa-eye"></i>
-    </button>
+    </button> -->
     
-    <!-- Zone de prévisualisation dans create-evaluation.html -->
-    <div id="formContainer" class="my-4"></div>
+    <!-- Modal de Prévisualisation en Plein Écran -->
+    <div class="modal fade" id="previewEvaluationModal" tabindex="-1" aria-labelledby="previewEvaluationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewEvaluationModalLabel">Prévisualisation du Formulaire d'Évaluation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe :src="previewLink" frameborder="0" style="width: 100%; height: 100%;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
